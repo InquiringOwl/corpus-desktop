@@ -1,0 +1,804 @@
+<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta http-equiv="Content-Security-Policy" content="default-src 'self' corpus:; script-src 'self' 'unsafe-inline' corpus:; style-src 'self' 'unsafe-inline' corpus:; img-src 'self' data: blob: corpus:; connect-src 'self' corpus:; font-src 'self' corpus:"></head><body><title>Corpus Body Lab</title>
+<link rel="stylesheet" href="fonts.css">
+<style>
+:root{color-scheme:dark;--bg:#04070a;--panel:rgba(11,17,22,.92);--hdr1:#1a2630;--hdr2:#121b22;--line:#22303b;--line2:#31434f;--txt:#c9d4db;--dim:#7f8e99;--faint:#4b5a65;--acc:#58c7e0;--acc2:#bff6ff;--amber:#f0b25a;--hot:#ff8a3d;--cool:#5b8dff;--bad:#e0524c;--good:#5cc28a}
+*{box-sizing:border-box}
+[hidden]{display:none!important}
+html,body{height:100%}
+body{margin:0;background:var(--bg);color:var(--txt);font:14px/1.38 "Barlow Semi Condensed","Arial Narrow","Roboto Condensed",system-ui,sans-serif;font-variant-numeric:tabular-nums;overflow:hidden}
+button,input{font:inherit;color:inherit}
+button{cursor:pointer}
+:focus-visible{outline:1px solid var(--acc);outline-offset:2px}
+#app{height:100%;display:grid;grid-template-columns:250px minmax(0,1fr) 360px;grid-template-rows:42px minmax(0,1fr);grid-template-areas:"top top top" "browser bay stats";gap:8px 10px;padding-inline:16px;padding-block:8px 12px;background:radial-gradient(1200px 700px at 50% 55%,#0b1620 0%,#05090d 60%,#030507 100%)}
+.topbar{grid-area:top;display:flex;align-items:center;gap:14px;border-bottom:1px solid var(--line);padding-bottom:6px;min-width:0}
+.brand{display:flex;align-items:baseline;gap:10px;white-space:nowrap}
+.brand b{font-weight:700;letter-spacing:.32em;font-size:15px;color:#e6eef3}
+.brand span{color:var(--dim);font-size:12px;letter-spacing:.08em;text-transform:uppercase}
+.seg{display:inline-flex;border:1px solid var(--line2);background:#0a1116}
+.seg button{background:none;border:0;padding:3px 12px;font-size:12px;letter-spacing:.08em;text-transform:uppercase;color:var(--dim)}
+.seg button[aria-pressed="true"]{background:linear-gradient(#1d3440,#142630);color:var(--acc2);box-shadow:inset 0 -2px 0 var(--acc)}
+.seglbl{font-size:11px;color:var(--faint);letter-spacing:.1em;text-transform:uppercase;margin-right:-6px}
+.spacer{flex:1}
+.tbtn{background:#0a1116;border:1px solid var(--line2);padding:3px 10px;font-size:12px;letter-spacing:.06em;text-transform:uppercase;color:var(--dim)}
+.tbtn:hover{color:var(--acc2);border-color:var(--acc)}
+.browser{grid-area:browser;display:flex;flex-direction:column;min-height:0;border:1px solid var(--line);background:var(--panel)}
+.bhead{padding:8px 10px;border-bottom:1px solid var(--line);display:flex;flex-direction:column;gap:7px;background:linear-gradient(#16212a,#0f171d)}
+.bhead h2{margin:0;font-size:13px;font-weight:600;letter-spacing:.12em;text-transform:uppercase;color:#dbe5eb}
+.search{display:flex;align-items:center;gap:6px;border:1px solid var(--line2);background:#070c10;padding:3px 8px}
+.search input{flex:1;min-width:0;background:none;border:0;outline:none;font-size:13px}
+.blist{flex:1;overflow:auto;padding:4px 0 10px}
+.grp>button{width:100%;display:flex;align-items:center;gap:8px;background:none;border:0;padding:5px 10px;text-align:left;font-size:12px;letter-spacing:.08em;text-transform:uppercase;color:#a9b8c2}
+.caret{width:0;height:0;border-left:4px solid transparent;border-right:4px solid transparent;border-top:5px solid currentColor;transition:transform .15s}
+.grp.closed .caret,.sec.closed .caret{transform:rotate(-90deg)}
+.grp.closed .rows{display:none}
+.grp .cnt{margin-left:auto;color:var(--faint)}
+.roww{display:flex;align-items:center}
+.row{flex:1;min-width:0;display:flex;align-items:center;gap:8px;background:none;border:0;padding:4px 6px 4px 24px;text-align:left;font-size:13.5px;color:var(--txt);border-left:2px solid transparent;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.row:hover{background:#101a21;color:#fff}
+.row.on{background:linear-gradient(90deg,rgba(88,199,224,.16),transparent);border-left-color:var(--acc);color:#fff}
+.row.hidden{color:var(--faint)}
+.row .dot{width:7px;height:7px;border-radius:50%;flex:none}
+.eye{background:none;border:0;color:var(--faint);width:28px;height:26px;display:grid;place-items:center;flex:none}
+.eye:hover{color:var(--acc2)}
+.eye svg{width:15px;height:15px}
+.bay{grid-area:bay;position:relative;min-width:0;min-height:0;container-type:size;display:grid;place-items:center}
+.ring{position:relative;width:min(100cqw,100cqh);aspect-ratio:1;container-type:inline-size}
+.ring-svg{position:absolute;inset:0;width:100%;height:100%;pointer-events:none}
+.viewport{position:absolute;left:12.8%;top:12.8%;width:74.4%;height:74.4%;border-radius:50%;overflow:hidden;background:radial-gradient(circle at 50% 42%,#15293b 0%,#0c1b2a 36%,#07111c 64%,#040a12 100%);box-shadow:0 0 0 1px #1e2d38,0 0 60px rgba(20,90,160,.18) inset;touch-action:none}
+.viewport canvas{display:block;width:100%;height:100%}
+.pin{position:absolute;left:0;top:0;pointer-events:none;white-space:nowrap;font-size:13px}
+.pin i{position:absolute;width:7px;height:7px;border-radius:50%;background:#c4f9ff;box-shadow:0 0 8px #58c7e0;transform:translate(-50%,-50%)}
+.pin b{position:absolute;transform:translate(14px,-120%);background:rgba(4,10,14,.85);border:1px solid #33505f;padding:2px 8px;color:#fff;font-weight:600}
+.pin b small{display:block;font-weight:400;color:#8fd8ea;font-size:11px;letter-spacing:.06em;text-transform:uppercase}
+.loading{position:absolute;inset:0;display:grid;place-items:center;color:var(--dim);font-size:13px;letter-spacing:.1em;text-transform:uppercase}
+.slot{position:absolute;width:7.3%;aspect-ratio:1;transform:translate(-50%,-50%);border:1px solid #2b3b47;border-radius:3px;padding:0;display:grid;place-items:center;background:radial-gradient(circle at 50% 30%,#1b2731,#0a1015 75%);color:#7e95a4;transition:border-color .15s,color .15s,box-shadow .15s}
+.slot svg{width:60%;height:60%;pointer-events:none}
+.slot .ab{font-size:max(9px,1.2cqw);letter-spacing:.05em;font-weight:600;pointer-events:none}
+.slot:hover{border-color:#4d6676;color:#cfe3ee}
+.slot.on{border-color:var(--acc);color:var(--acc2);box-shadow:0 0 0 1px rgba(88,199,224,.22),inset 0 0 14px rgba(88,199,224,.35)}
+.slot.low{color:#b99a70}
+.slot.low.on{border-color:var(--amber);color:#ffe0b0;box-shadow:0 0 0 1px rgba(240,178,90,.25),inset 0 0 14px rgba(240,178,90,.35)}
+.bay-corner{position:absolute;font-size:12px;color:var(--dim);letter-spacing:.04em;pointer-events:none}
+.bay-tl{left:4px;top:2px}.bay-tl .t{color:#e3ecf1;font-size:13px}
+.bay-br{right:4px;bottom:2px;text-align:right}
+.bay-br .g{display:flex;justify-content:flex-end;gap:8px;align-items:baseline}
+.bay-br .g b{color:#e3ecf1;font-weight:500;min-width:44px}
+.bay-br .k{font-size:11px;letter-spacing:.12em;text-transform:uppercase}
+.bay-bl{right:4px;top:2px;max-width:34%;text-align:right}
+.toast{position:absolute;left:50%;top:6px;transform:translateX(-50%);background:rgba(8,14,18,.92);border:1px solid var(--line2);padding:4px 12px;font-size:12.5px;color:var(--acc2);opacity:0;transition:opacity .25s;pointer-events:none;white-space:nowrap}
+.toast.show{opacity:1}
+.stats{grid-area:stats;min-height:0;overflow:auto;display:flex;flex-direction:column;gap:6px;padding-right:2px}
+.sec{border:1px solid var(--line);background:var(--panel)}
+.sec-h{width:100%;display:flex;align-items:center;gap:8px;height:28px;padding:0 10px;border:0;background:linear-gradient(var(--hdr1),var(--hdr2));text-align:left;font-weight:600;font-size:13.5px;color:#e1eaf0}
+.sec-h .v{margin-left:auto;font-weight:500;color:var(--dim);font-size:13px}
+.sec-h .v.acc{color:var(--acc)}.sec-h .v.amb{color:var(--amber)}
+.sec.closed .sec-b{display:none}
+.sec-b{padding:10px 12px 12px;display:flex;flex-direction:column;gap:10px}
+.mot{display:grid;grid-template-columns:100px 1fr 46px;gap:4px 10px;align-items:center;font-size:13px}
+.mot label{color:#c3cfd6}
+.mot output{text-align:right;color:#fff}
+.mot .nr{grid-column:2/-1;margin-top:-6px;font-size:11.5px;color:var(--faint);display:flex;justify-content:space-between}
+input[type=range]{-webkit-appearance:none;appearance:none;width:100%;height:18px;background:transparent}
+input[type=range]::-webkit-slider-runnable-track{height:4px;background:linear-gradient(90deg,#2c6d86,#1f5063);border:1px solid #26343e}
+input[type=range]::-moz-range-track{height:4px;background:#1f5063;border:1px solid #26343e}
+input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:12px;height:16px;margin-top:-7px;background:#cfeff8;border:1px solid #58c7e0;border-radius:2px}
+input[type=range]::-moz-range-thumb{width:12px;height:16px;background:#cfeff8;border:1px solid #58c7e0;border-radius:2px}
+.rhythm{font-size:12.5px;color:var(--dim);border-left:2px solid #2d4553;padding-left:8px}
+.rhythm b{color:#e6eef3;font-weight:500}
+.act{display:grid;grid-template-columns:1fr 120px 48px;gap:4px 8px;align-items:center;font-size:13px}
+.act button{background:none;border:0;padding:0;text-align:left;color:#d3dde3;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.act button:hover{color:#fff}
+.dbar{position:relative;height:10px;background:#070c10;border:1px solid #22303b}
+.dbar::after{content:"";position:absolute;left:50%;top:-2px;bottom:-2px;width:1px;background:#3b4d59}
+.dbar i{position:absolute;top:0;bottom:0}
+.act em{font-style:normal;text-align:right;font-size:12.5px}
+.sh{color:var(--hot)}.ln{color:var(--cool)}
+.legend{display:flex;gap:14px;font-size:12px;color:var(--dim)}
+.legend span::before{content:"";display:inline-block;width:10px;height:10px;margin-right:5px;vertical-align:-1px}
+.legend .a::before{background:var(--hot)}.legend .b::before{background:var(--cool)}
+.nm{font-size:20px;font-weight:600;color:#fff;line-height:1.1;text-wrap:balance}
+.lat{font-style:italic;color:var(--dim);font-size:13.5px;margin-top:2px}
+.chips{display:flex;flex-wrap:wrap;gap:5px}
+.chip{font-size:11px;letter-spacing:.08em;text-transform:uppercase;border:1px solid var(--line2);padding:1px 6px;color:#a9bac5;background:#0a1116}
+.chip.c{border-color:rgba(88,199,224,.5);color:var(--acc2)}
+.sum{margin:0;color:#b9c6ce;font-size:14px;max-width:65ch}
+.acts{display:flex;gap:6px;flex-wrap:wrap}
+.btn{background:linear-gradient(#1a2a35,#101c24);border:1px solid #2f4a5a;color:#cfe6f0;padding:3px 10px;font-size:12px;letter-spacing:.06em;text-transform:uppercase}
+.btn:hover{border-color:var(--acc);color:#fff}
+dl.kv{display:grid;grid-template-columns:86px 1fr;gap:6px 10px;margin:0;font-size:13.5px}
+dl.kv dt{color:var(--dim);font-size:11px;letter-spacing:.08em;text-transform:uppercase;padding-top:2px}
+dl.kv dd{margin:0;color:#d3dde3}
+.live{display:flex;justify-content:space-between;align-items:baseline;border:1px solid var(--line2);background:#070c10;padding:6px 10px}
+.live b{font-size:18px;font-weight:600}
+.sub{font-size:11px;letter-spacing:.1em;text-transform:uppercase;color:var(--dim);margin:0 0 -4px}
+.cut{display:grid;grid-template-columns:1fr 46px;gap:8px;align-items:center;font-size:13px}
+.foot{font-size:11.5px;color:var(--faint);padding:2px 2px 6px;line-height:1.45}
+.foot a{color:var(--dim)}
+.tip{position:fixed;z-index:50;pointer-events:none;max-width:260px;background:rgba(6,11,15,.96);border:1px solid #33505f;padding:6px 10px;font-size:13px}
+.tip b{display:block;color:#fff;font-weight:600}
+.tip span{color:#b3c1ca}
+@media (max-width:1180px){#app{grid-template-columns:minmax(0,1fr) 330px;grid-template-areas:"top top" "bay stats"}.browser{display:none}}
+@media (max-width:820px){html,body{height:auto;overflow:auto}#app{height:auto;min-height:100%;grid-template-columns:minmax(0,1fr);grid-template-rows:auto;grid-template-areas:"top" "bay" "stats"}.topbar{flex-wrap:wrap;row-gap:6px}.brand span{display:none}.bay{container-type:normal;display:block;padding-block:26px 40px}.ring{width:100%}.stats{overflow:visible}}
+@media (prefers-reduced-motion:reduce){*{transition:none!important}}
+
+.btabs{display:flex;border-bottom:1px solid var(--line)}
+.btabs button{flex:1;background:none;border:0;padding:6px 0;font-size:12px;letter-spacing:.08em;text-transform:uppercase;color:var(--dim);border-bottom:2px solid transparent}
+.btabs button[aria-selected="true"]{color:var(--acc2);border-bottom-color:var(--acc)}
+.grp.l2>button{padding-left:22px;font-size:11.5px;color:#8fa2ae}
+.grp.l2 .row{padding-left:38px}
+.row .sd{margin-left:auto;font-size:11px;color:var(--faint);letter-spacing:.06em}
+.row .ab{font-size:11px;letter-spacing:.08em;border:1px solid var(--line2);padding:0 4px;color:var(--amber);flex:none}
+.mtabs{display:flex;flex-wrap:wrap;gap:4px}
+.mtabs button{background:#0a1116;border:1px solid var(--line2);padding:2px 8px;font-size:11.5px;letter-spacing:.06em;text-transform:uppercase;color:var(--dim)}
+.mtabs button[aria-pressed="true"]{border-color:var(--acc);color:var(--acc2);background:linear-gradient(#1d3440,#142630)}
+.cpin{position:absolute;left:0;top:0;pointer-events:none;width:18px;height:18px;margin:-9px 0 0 -9px;border-radius:50%;background:#1c1307;border:1px solid #ffc676;color:#ffd9a3;font-size:11px;font-weight:600;display:grid;place-items:center}
+.progress{width:180px;height:3px;background:#12202a;margin-top:8px;position:relative;overflow:hidden}
+.progress i{position:absolute;left:0;top:0;bottom:0;background:var(--acc);width:0;transition:width .2s}
+canvas.histo{width:100%;height:170px;display:block;border:1px solid var(--line2);background:#000}
+.hcap{display:flex;justify-content:space-between;font-size:12px;color:var(--dim);margin-top:-5px}
+.tests{display:flex;flex-direction:column;gap:6px}
+.test{border-left:2px solid #2d4553;padding:2px 0 2px 8px;font-size:13.5px}
+.test b{color:#eaf2f6;font-weight:600}.test span{display:block;color:#a8b6bf}
+.flag{border:1px solid rgba(224,82,76,.5);background:rgba(224,82,76,.08);padding:6px 8px;font-size:13px;color:#f2c0bd}
+.flag b{color:#ff8b85;letter-spacing:.08em;font-size:11px;text-transform:uppercase;display:block}
+ul.ls{margin:0;padding-left:16px;display:flex;flex-direction:column;gap:3px;font-size:13.5px;color:#cbd6dd}
+ol.seq{margin:0;padding:0;list-style:none;display:flex;flex-direction:column;gap:2px;counter-reset:s}
+ol.seq li{counter-increment:s}
+ol.seq button{width:100%;display:grid;grid-template-columns:22px 1fr auto;gap:8px;align-items:start;background:none;border:0;border-left:2px solid rgba(240,178,90,.35);padding:4px 6px;text-align:left}
+ol.seq button::before{content:counter(s);color:var(--amber);font-weight:600}
+ol.seq .n{color:#eef3f6}ol.seq .x{display:block;color:var(--dim);font-size:12.5px}ol.seq .sd{font-size:11px;color:var(--faint);text-transform:uppercase}
+.upd{position:fixed;right:16px;bottom:16px;z-index:60;background:rgba(8,14,18,.96);border:1px solid var(--acc);padding:10px 12px;max-width:320px;font-size:13px;display:flex;flex-direction:column;gap:8px;box-shadow:0 10px 40px rgba(0,0,0,.5)}
+.upd b{color:#fff}
+.upd .acts{justify-content:flex-end}
+</style>
+
+<div id="app">
+  <header class="topbar">
+    <div class="brand"><b>CORPUS</b><span>Body lab · full specimen · 3D</span></div>
+    <span class="seglbl">Render</span>
+    <div class="seg"><button id="rT" aria-pressed="true">Tissue</button><button id="rS" aria-pressed="false">Scan</button></div>
+    <div class="spacer"></div>
+    <button class="tbtn" id="resetBtn">Reset</button>
+  </header>
+  <section class="browser" aria-label="Structure browser">
+    <div class="bhead"><h2 id="bTitle">Structure browser</h2><label class="search"><input id="q" type="search" placeholder="Search 2,900 structures" autocomplete="off"></label></div>
+    <div class="btabs" role="tablist"><button id="t-st" role="tab" aria-selected="true">Structures</button><button id="t-ch" role="tab" aria-selected="false">Kinetic chains</button></div>
+    <div class="blist" id="blist"></div>
+  </section>
+  <main class="bay">
+    <div class="ring" id="ring">
+      <svg class="ring-svg" id="ringSvg" viewBox="0 0 1000 1000" aria-hidden="true"></svg>
+      <div class="viewport" id="viewport"><div class="loading" id="loading"><div style="text-align:center"><div id="loadTxt">Assembling specimen…</div><div class="progress"><i id="loadBar"></i></div></div></div><div id="cpins"></div><div class="pin" id="pin" hidden><i></i><b></b></div></div>
+      <div id="slots"></div>
+    </div>
+    <div class="bay-corner bay-tl"><div class="t">Fitting · 3D · <span id="verLbl"></span></div><div id="poseLabel">Anatomical position</div></div>
+    <div class="bay-corner bay-bl" id="hint">Drag to rotate · right-drag to pan · scroll to zoom · click a structure</div>
+    <div class="bay-corner bay-br"><div class="g"><span class="k">Structures shown</span><b id="gE">0</b></div><div class="g"><span class="k">Muscles active</span><b id="gS">0</b></div></div>
+    <div class="toast" id="toast"></div>
+  </main>
+  <aside class="stats" id="stats"></aside>
+</div>
+<div class="tip" id="tip" hidden></div>
+
+
+<script type="importmap">{"imports":{"three":"./vendor/three/build/three.module.js","three/addons/":"./vendor/three/examples/jsm/"}}</script>
+<script>/* ============ procedural histology ============ */
+function RNG(seed){let s=(seed%2147483646)+1;return()=>(s=s*16807%2147483647)/2147483647;}
+const TAU=Math.PI*2;
+function ell(g,x,y,rx,ry,rot,fill){g.beginPath();g.ellipse(x,y,Math.max(.1,rx),Math.max(.1,ry),rot||0,0,TAU);g.fillStyle=fill;g.fill();}
+function circ(g,x,y,r,fill,stroke,lw){g.beginPath();g.arc(x,y,Math.max(.1,r),0,TAU);if(fill){g.fillStyle=fill;g.fill();}if(stroke){g.strokeStyle=stroke;g.lineWidth=lw||1;g.stroke();}}
+const HEM='#4a2a7a',HEM2='#5b3590';
+
+const HISTO={
+bone:{t:'Compact bone',stain:'Ground section',mag:'×100',scale:'100 µm',
+ feat:['Osteons (Haversian systems)','Central canal with vessels','Concentric lamellae','Osteocytes in lacunae','Canaliculi','Cement lines'],
+ d:'Cortical bone is built from osteons: rings of mineralised collagen around a central canal that carries vessels and nerves. Osteocytes sit in lacunae and communicate through fine canaliculi.',
+ draw(g,w,h,u,r){g.fillStyle='#d6c7b4';g.fillRect(0,0,w,h);
+  g.strokeStyle='rgba(170,150,125,.55)';g.lineWidth=1.4*u;for(let i=0;i<40;i++){g.beginPath();const x=r()*w,y=r()*h;g.arc(x,y,40*u+r()*80*u,r()*6,r()*6+1.2);g.stroke();}
+  const sp=108*u;for(let y=-sp*.3;y<h+sp;y+=sp*.86)for(let x=-sp*.3+((y/sp|0)%2)*sp*.5;x<w+sp;x+=sp){
+   const cx=x+(r()-.5)*30*u,cy=y+(r()-.5)*30*u,R=(42+r()*16)*u;
+   circ(g,cx,cy,R,'#e4d7c6');
+   for(let rr=9*u;rr<R;rr+=4.6*u){circ(g,cx,cy,rr,null,(rr/u|0)%2?'#cdbba4':'#eee3d4',2*u);}
+   circ(g,cx,cy,R,null,'#9c8467',1.6*u);
+   for(let rr=13*u;rr<R-3*u;rr+=8.5*u){const n=Math.floor(TAU*rr/(15*u));for(let k=0;k<n;k++){if(r()<.35)continue;const a=k/n*TAU+r()*.3;const lx=cx+Math.cos(a)*rr,ly=cy+Math.sin(a)*rr;
+     g.strokeStyle='rgba(70,55,40,.55)';g.lineWidth=.5*u;g.beginPath();g.moveTo(lx-Math.cos(a)*4*u,ly-Math.sin(a)*4*u);g.lineTo(lx+Math.cos(a)*4*u,ly+Math.sin(a)*4*u);g.stroke();
+     ell(g,lx,ly,3.4*u,1.4*u,a+Math.PI/2,'#44352a');}}
+   circ(g,cx,cy,7.5*u,'#5a4535');circ(g,cx,cy,5*u,'#2e231b');}}},
+skm:{t:'Skeletal muscle',stain:'H&E, longitudinal',mag:'×400',scale:'25 µm',
+ feat:['Cross-striations (A and I bands)','Many flattened peripheral nuclei','Long multinucleate fibres','Endomysium between fibres'],
+ d:'Each fibre is a single multinucleate cell formed by fusion of myoblasts. The repeating sarcomeres create the light and dark bands; nuclei are pushed to the edge under the cell membrane.',
+ draw(g,w,h,u,r){g.fillStyle='#f3cbd8';g.fillRect(0,0,w,h);g.save();g.translate(w/2,h/2);g.rotate(-.12);g.translate(-w,-h);
+  let y=0;while(y<h*2){const fh=(22+r()*10)*u;const grd=g.createLinearGradient(0,y,0,y+fh);grd.addColorStop(0,'#cf6385');grd.addColorStop(.5,'#dc7896');grd.addColorStop(1,'#cc5f82');g.fillStyle=grd;g.fillRect(0,y+1.2*u,w*2,fh-2.4*u);
+   for(let x=0;x<w*2;x+=3.3*u){g.fillStyle='rgba(110,25,65,.28)';g.fillRect(x,y+1.2*u,1.3*u,fh-2.4*u);}
+   for(let x=r()*50*u;x<w*2;x+=(38+r()*50)*u){ell(g,x,y+(r()<.5?3*u:fh-3*u),9*u,2.1*u,0,HEM);}
+   y+=fh;}
+  g.restore();}},
+cardiac:{t:'Cardiac muscle',stain:'H&E, longitudinal',mag:'×400',scale:'25 µm',
+ feat:['Branching fibres','One or two central nuclei','Intercalated discs','Pale perinuclear zone','Striations'],
+ d:'Cardiomyocytes are short branching cells joined end to end by intercalated discs, which contain gap junctions so the heart contracts as a unit.',
+ draw(g,w,h,u,r){g.fillStyle='#f4d0dc';g.fillRect(0,0,w,h);const fh=26*u;
+  for(let y=-fh;y<h+fh;y+=fh){const ph=r()*6;g.fillStyle='#d77a98';g.beginPath();for(let x=0;x<=w;x+=6*u)g.lineTo(x,y+3*u+Math.sin(x/(60*u)+ph)*4*u);for(let x=w;x>=0;x-=6*u)g.lineTo(x,y+fh-3*u+Math.sin(x/(60*u)+ph)*4*u);g.fill();
+   for(let x=0;x<w;x+=3.4*u){g.fillStyle='rgba(120,30,70,.16)';g.fillRect(x,y+3*u,1.2*u,fh-6*u);}
+   if(r()<.7){const bx=r()*w;g.fillStyle='#d77a98';g.beginPath();g.moveTo(bx,y+fh-6*u);g.lineTo(bx+30*u,y+fh+6*u);g.lineTo(bx+44*u,y+fh+6*u);g.lineTo(bx+14*u,y+fh-6*u);g.fill();}
+   for(let x=r()*60*u;x<w;x+=(55+r()*45)*u){const cy=y+fh/2+Math.sin(x/(60*u)+ph)*4*u;ell(g,x,cy,11*u,4.8*u,0,'#f3dbe4');ell(g,x,cy,6.5*u,3.2*u,0,HEM);}
+   for(let x=r()*80*u;x<w;x+=(70+r()*40)*u){g.strokeStyle='#5c1740';g.lineWidth=1.6*u;g.beginPath();g.moveTo(x,y+3*u);g.lineTo(x,y+fh/2);g.lineTo(x+4*u,y+fh/2);g.lineTo(x+4*u,y+fh-3*u);g.stroke();}}}},
+tendon:{t:'Dense regular connective tissue',stain:'H&E, longitudinal',mag:'×200',scale:'50 µm',
+ feat:['Parallel type I collagen bundles','Rows of flattened tenocyte nuclei','Wavy "crimp" pattern','Few blood vessels'],
+ d:'Tendons, ligaments and the iliotibial band are packed with parallel collagen that resists tension along one axis. The sparse blood supply explains slow healing.',
+ draw(g,w,h,u,r){g.fillStyle='#f7dbe5';g.fillRect(0,0,w,h);
+  for(let y=0;y<h;y+=4.4*u){g.strokeStyle=r()<.5?'#e598b5':'#ecaabf';g.lineWidth=2.4*u;g.beginPath();const ph=y/(30*u);for(let x=0;x<=w;x+=4*u)g.lineTo(x,y+Math.sin(x/(9*u)+ph)*1.6*u);g.stroke();}
+  for(let y=6*u;y<h;y+=(15+r()*6)*u)for(let x=r()*30*u;x<w;x+=(26+r()*30)*u)ell(g,x,y,8*u,1.2*u,.02,HEM);}},
+cartilage:{t:'Hyaline (articular) cartilage',stain:'H&E',mag:'×200',scale:'50 µm',
+ feat:['Chondrocytes in lacunae','Isogenous groups','Basophilic territorial matrix','No blood vessels','Perichondrium (absent on joint surfaces)'],
+ d:'Glassy matrix rich in type II collagen and proteoglycans that cushions joint surfaces. Being avascular, it has very limited capacity to repair.',
+ draw(g,w,h,u,r){const grd=g.createLinearGradient(0,0,0,h);grd.addColorStop(0,'#e6c9dd');grd.addColorStop(1,'#cdb6dc');g.fillStyle=grd;g.fillRect(0,0,w,h);
+  g.fillStyle='#eab1c6';g.fillRect(0,0,w,26*u);for(let y=3*u;y<26*u;y+=5*u)for(let x=r()*20*u;x<w;x+=(22+r()*20)*u)ell(g,x,y,7*u,1.1*u,0,HEM);
+  const sp=58*u;for(let y=48*u;y<h+sp;y+=sp)for(let x=sp*.3;x<w+sp;x+=sp){const cx=x+(r()-.5)*24*u,cy=y+(r()-.5)*20*u;circ(g,cx,cy,22*u,'rgba(125,80,165,.28)');
+   const n=1+(r()*4|0);for(let k=0;k<n;k++){const a=k/n*TAU+r(),d=n>1?8*u:0;const lx=cx+Math.cos(a)*d,ly=cy+Math.sin(a)*d;ell(g,lx,ly,7*u,5.6*u,a,'#f5eff7');ell(g,lx,ly,5*u,4*u,a,'#c8a9d8');circ(g,lx,ly,1.9*u,'#553285');}}}},
+nerve:{t:'Peripheral nerve',stain:'H&E, cross-section',mag:'×200',scale:'50 µm',
+ feat:['Epineurium around the whole nerve','Perineurium around each fascicle','Endoneurium around each axon','Myelinated axons (pale halos)','Schwann cell nuclei'],
+ d:'Axons are bundled into fascicles by three connective tissue sheaths. In paraffin sections the myelin lipid dissolves, leaving a pale ring around each dark axon.',
+ draw(g,w,h,u,r){g.fillStyle='#f1cfdc';g.fillRect(0,0,w,h);for(let i=0;i<14;i++)circ(g,r()*w,r()*h,(10+r()*14)*u,'#fbf3f6','#e8b9ca',u);
+  const fs=[[.32,.36,.24],[.7,.3,.19],[.62,.72,.22],[.26,.76,.15],[.9,.62,.12]];
+  fs.forEach(([fx_,fy,fr])=>{const cx=fx_*w,cy=fy*h,R=fr*Math.min(w,h)*1.25;circ(g,cx,cy,R+3*u,'#c56b8d');circ(g,cx,cy,R,'#f7e5ec');
+   const n=Math.floor(R*R/(40*u*u));for(let i=0;i<n;i++){const a=r()*TAU,d=Math.sqrt(r())*(R-5*u);const x=cx+Math.cos(a)*d,y=cy+Math.sin(a)*d,ar=(2+r()*2.6)*u;circ(g,x,y,ar,'#fffafc','rgba(198,106,145,.85)',.8*u);circ(g,x,y,ar*.34,'#a1487a');if(r()<.08)ell(g,x+ar,y,2.6*u,1.4*u,r()*3,HEM);}});}},
+artery:{t:'Muscular artery',stain:'H&E, cross-section',mag:'×100',scale:'100 µm',
+ feat:['Tunica intima with endothelium','Wavy internal elastic lamina','Thick tunica media (smooth muscle)','External elastic lamina','Tunica adventitia with vasa vasorum'],
+ d:'Distributing arteries such as the brachial and femoral have a thick smooth-muscle media that adjusts their diameter and so the blood flow to each limb.',
+ draw(g,w,h,u,r){drawVessel(g,w,h,u,r,false);}},
+elastic:{t:'Elastic artery',stain:'H&E / elastic, cross-section',mag:'×100',scale:'100 µm',
+ feat:['Many fenestrated elastic lamellae in the media','Smooth muscle between lamellae','Vasa vasorum in the outer wall','Thin intima'],
+ d:'The aorta and carotids store energy as their elastic walls stretch in systole, then recoil to keep blood flowing during diastole (the Windkessel effect).',
+ draw(g,w,h,u,r){drawVessel(g,w,h,u,r,true);}},
+lung:{t:'Lung parenchyma',stain:'H&E',mag:'×100',scale:'100 µm',
+ feat:['Alveoli','Thin interalveolar septa','Type I pneumocytes (gas exchange)','Type II pneumocytes (surfactant)','Alveolar macrophages','Bronchiole'],
+ d:'Hundreds of millions of thin-walled alveoli bring air within about half a micron of blood. Type II cells secrete surfactant that stops alveoli collapsing.',
+ draw(g,w,h,u,r){g.fillStyle='#e29ab5';g.fillRect(0,0,w,h);const sp=34*u;const pts=[];
+  for(let y=0;y<h+sp;y+=sp*.87)for(let x=((y/(sp*.87)|0)%2)*sp/2;x<w+sp;x+=sp){pts.push([x+(r()-.5)*10*u,y+(r()-.5)*10*u]);}
+  pts.forEach(([x,y])=>{if(r()<.5)ell(g,x+sp/2,y,2.4*u,1.8*u,r()*3,HEM);if(r()<.25)circ(g,x+sp/2,y+sp*.4,2.2*u,'#c9303f');});
+  pts.forEach(([x,y])=>{g.beginPath();g.ellipse(x,y,(15+r()*3)*u,(14+r()*3)*u,r()*3,0,TAU);g.fillStyle='#fdf3f6';g.fill();});
+  const bx=w*.7,by=h*.35,br=38*u;circ(g,bx,by,br+10*u,'#d4708f');g.beginPath();for(let a=0;a<=TAU+.01;a+=.05){const rr=br+Math.sin(a*14)*4*u;g.lineTo(bx+Math.cos(a)*rr,by+Math.sin(a)*rr);}g.fillStyle='#8a5aa8';g.fill();circ(g,bx,by,br-7*u,'#fbeef3');}},
+liver:{t:'Liver lobule',stain:'H&E',mag:'×100',scale:'100 µm',
+ feat:['Central vein','Hepatocyte plates radiating outward','Sinusoids with Kupffer cells','Portal triads: portal vein, hepatic artery, bile duct'],
+ d:'Blood enters at the portal triads, flows through the sinusoids past the hepatocytes, and drains to the central vein. Bile flows the opposite way.',
+ draw(g,w,h,u,r){g.fillStyle='#e8a3b9';g.fillRect(0,0,w,h);const cx=w/2,cy=h/2,M=Math.hypot(w,h)/2;
+  for(let a=0;a<TAU;a+=TAU/52){const ca=Math.cos(a),sa=Math.sin(a);for(let d=20*u;d<M;d+=11*u){const x=cx+ca*d,y=cy+sa*d;ell(g,x,y,5.6*u,4.8*u,a,'#e290ab');if(r()<.7)circ(g,x,y,2.1*u,HEM2);}
+   const a2=a+TAU/104;g.strokeStyle='#fbe9ef';g.lineWidth=2.2*u;g.beginPath();g.moveTo(cx+Math.cos(a2)*18*u,cy+Math.sin(a2)*18*u);g.lineTo(cx+Math.cos(a2)*M,cy+Math.sin(a2)*M);g.stroke();}
+  circ(g,cx,cy,17*u,'#fdf5f8','#c46a8c',1.4*u);
+  for(let k=0;k<6;k++){const a=k/6*TAU+.52,R=Math.min(w,h)*.46;const x=cx+Math.cos(a)*R,y=cy+Math.sin(a)*R;circ(g,x,y,20*u,'#f2c7d6');ell(g,x-5*u,y,9*u,6*u,0,'#fff6f9');circ(g,x+8*u,y-6*u,4*u,'#fff6f9','#b2365a',2.2*u);circ(g,x+6*u,y+8*u,5*u,'#fff6f9');for(let q=0;q<7;q++)circ(g,x+6*u+Math.cos(q)*5.2*u,y+8*u+Math.sin(q)*5.2*u,1.5*u,HEM);}}},
+cortex:{t:'Cerebral cortex',stain:'H&E',mag:'×200',scale:'50 µm',
+ feat:['Pyramidal neurons with apical dendrites','Nissl-rich cytoplasm','Neuropil','Glial nuclei','Capillaries'],
+ d:'The neocortex has six layers. Large pyramidal neurons project their apical dendrites toward the surface and send axons to the spinal cord and other brain regions.',
+ draw(g,w,h,u,r){g.fillStyle='#efcad8';g.fillRect(0,0,w,h);for(let i=0;i<2400;i++){g.fillStyle='rgba(150,70,115,.18)';g.fillRect(r()*w,r()*h,1.2*u,1.2*u);}
+  for(let i=0;i<5;i++){const x=r()*w,y=r()*h;ell(g,x,y,14*u,6*u,r()*3,'#fbf0f4');ell(g,x+8*u,y,3*u,1.6*u,0,HEM);}
+  for(let i=0;i<150;i++)circ(g,r()*w,r()*h,(1.6+r()*.9)*u,HEM);
+  for(let i=0;i<20;i++){const x=r()*w,y=r()*h,s=(10+r()*5)*u;g.strokeStyle='#ad5f8a';g.lineWidth=1.8*u;g.beginPath();g.moveTo(x,y-s);g.lineTo(x+(r()-.5)*8*u,y-s-30*u);g.stroke();
+   g.fillStyle='#ad5f8a';g.beginPath();g.moveTo(x,y-s*1.1);g.lineTo(x+s*.8,y+s*.55);g.lineTo(x-s*.8,y+s*.55);g.closePath();g.fill();circ(g,x,y,4.2*u,'#ecd0de');circ(g,x,y,1.4*u,'#3a1c5a');}}},
+cord:{t:'Spinal cord',stain:'H&E, cross-section',mag:'×20',scale:'1 mm',
+ feat:['Butterfly-shaped grey matter','Dorsal and ventral horns','Ventral horn motor neurons','White matter columns','Central canal','Anterior median fissure'],
+ d:'Grey matter holds neuron cell bodies; the surrounding white matter carries ascending and descending tracts. Large motor neurons in the ventral horns send axons to skeletal muscle.',
+ draw(g,w,h,u,r){g.fillStyle='#0b0f14';g.fillRect(0,0,w,h);const cx=w/2,cy=h/2,m=Math.min(w,h)*.42;
+  ell(g,cx,cy,m*1.02,m*.82,0,'#e7a7c0');ell(g,cx,cy,m*.98,m*.78,0,'#f3cfdd');
+  g.fillStyle='#c8739b';const E=(x,y,rx,ry,rot)=>{g.beginPath();g.ellipse(x,y,rx,ry,rot,0,TAU);g.fill();};
+  E(cx,cy,m*.2,m*.08,0);for(const s of[-1,1]){E(cx+s*m*.22,cy-m*.3,m*.07,m*.36,-s*.45);E(cx+s*m*.3,cy+m*.22,m*.2,m*.25,s*.35);}
+  circ(g,cx,cy,2.4*u,'#fff');for(const s of[-1,1])for(let i=0;i<9;i++)circ(g,cx+s*(m*.26+r()*m*.16),cy+m*(.12+r()*.26),2.2*u,'#3d1c63');
+  g.strokeStyle='#0b0f14';g.lineWidth=3*u;g.beginPath();g.moveTo(cx,cy+m*.8);g.lineTo(cx,cy+m*.36);g.stroke();g.lineWidth=1*u;g.strokeStyle='#b35f86';g.beginPath();g.moveTo(cx,cy-m*.78);g.lineTo(cx,cy-m*.1);g.stroke();}},
+kidney:{t:'Renal cortex',stain:'H&E',mag:'×200',scale:'50 µm',
+ feat:['Glomerulus (capillary tuft)','Bowman capsule and space','Proximal tubules (pink, brush border)','Distal tubules (clearer lumen)'],
+ d:'Each nephron starts at a glomerulus, where blood is filtered into Bowman space. The tubules then reclaim most of the water, salt and glucose.',
+ draw(g,w,h,u,r){g.fillStyle='#e9a2bb';g.fillRect(0,0,w,h);const sp=31*u;
+  for(let y=0;y<h+sp;y+=sp)for(let x=((y/sp|0)%2)*sp/2;x<w+sp;x+=sp){const cx=x+(r()-.5)*8*u,cy=y+(r()-.5)*8*u,pct=r()<.65;circ(g,cx,cy,13*u,pct?'#e0859f':'#eaa8bf','#f7d7e2',1.2*u);circ(g,cx,cy,(pct?3:6)*u,'#fdf1f5');for(let k=0;k<7;k++){const a=k/7*TAU+r()*.3;circ(g,cx+Math.cos(a)*9*u,cy+Math.sin(a)*9*u,1.8*u,HEM);}}
+  [[.33,.4],[.72,.66]].forEach(([a,b])=>{const cx=a*w,cy=b*h;circ(g,cx,cy,36*u,'#fdf1f5','#c56f90',1.6*u);circ(g,cx+2*u,cy,28*u,'#d58caf');for(let i=0;i<80;i++){const t=r()*TAU,d=Math.sqrt(r())*26*u;circ(g,cx+2*u+Math.cos(t)*d,cy+Math.sin(t)*d,1.7*u,HEM);}for(let i=0;i<14;i++){const t=r()*TAU,d=r()*20*u;circ(g,cx+Math.cos(t)*d,cy+Math.sin(t)*d,2.2*u,'#f8e3ea');}});}},
+gut:{t:'Small intestine (jejunum)',stain:'H&E',mag:'×100',scale:'100 µm',
+ feat:['Villi','Enterocytes with brush border','Goblet cells','Crypts of Lieberkühn','Lamina propria','Muscularis mucosae'],
+ d:'Finger-like villi covered in absorptive enterocytes multiply the surface area of the gut. Crypts at their base renew the lining every few days.',
+ draw(g,w,h,u,r){g.fillStyle='#fbeef3';g.fillRect(0,0,w,h);const base=h*.66;
+  g.fillStyle='#f0bcd0';g.fillRect(0,base,w,h-base);g.fillStyle='#d56d8f';g.fillRect(0,h*.86,w,12*u);
+  for(let x=10*u;x<w;x+=22*u){g.fillStyle='#e7a0ba';g.fillRect(x,base+6*u,12*u,h*.18);for(let y=base+8*u;y<h*.84;y+=6*u)circ(g,x+(r()<.5?1.5:10.5)*u,y,1.7*u,HEM);}
+  for(let x=18*u;x<w;x+=46*u){const vw=(28+r()*8)*u,top=h*(.06+r()*.14);const x0=x-vw/2;
+   g.beginPath();g.moveTo(x0,base+4*u);g.lineTo(x0,top+vw/2);g.arc(x,top+vw/2,vw/2,Math.PI,0);g.lineTo(x0+vw,base+4*u);g.closePath();g.fillStyle='#d9829f';g.fill();
+   g.beginPath();g.moveTo(x0+5*u,base+4*u);g.lineTo(x0+5*u,top+vw/2);g.arc(x,top+vw/2,vw/2-5*u,Math.PI,0);g.lineTo(x0+vw-5*u,base+4*u);g.fillStyle='#eeb3c7';g.fill();
+   for(let y=top+vw/2;y<base;y+=5*u){for(const s of[-1,1]){if(r()<.1){ell(g,x+s*(vw/2-2.6*u),y,2.2*u,3.4*u,0,'#fdf6f9');continue;}ell(g,x+s*(vw/2-3*u),y,1.1*u,2.4*u,0,HEM);}}
+   for(let i=0;i<10;i++)circ(g,x+(r()-.5)*(vw-14*u),top+vw/2+r()*(base-top-vw/2),1.5*u,'#7a4a98');}}},
+stomach:{t:'Gastric mucosa',stain:'H&E',mag:'×100',scale:'100 µm',
+ feat:['Gastric pits','Surface mucous cells','Parietal cells (acid, intrinsic factor)','Chief cells (pepsinogen)','Muscularis mucosae'],
+ d:'Surface cells secrete protective mucus. Deep in the glands, pink parietal cells make hydrochloric acid and purple chief cells make pepsinogen.',
+ draw(g,w,h,u,r){g.fillStyle='#f6dde7';g.fillRect(0,0,w,h);g.fillStyle='#fbf2f6';g.fillRect(0,0,w,h*.08);g.fillStyle='#d56d8f';g.fillRect(0,h*.88,w,12*u);
+  for(let x=14*u;x<w;x+=30*u){g.fillStyle='#fdf6f9';g.fillRect(x-2*u,h*.08,4*u,h*.22);
+   for(let y=h*.1;y<h*.3;y+=6*u)for(const s of[-1,1])ell(g,x+s*6*u,y,1.2*u,2.6*u,0,HEM);
+   for(let y=h*.32;y<h*.86;y+=8.5*u)for(const s of[-1,1]){const deep=y>h*.64;const cx=x+s*7*u+(r()-.5)*2*u;circ(g,cx,y,5.2*u,deep?'#a58cd0':'#ec9fbd');circ(g,cx+(deep?s*2*u:0),y,1.8*u,HEM);}
+   g.strokeStyle='#fdf6f9';g.lineWidth=1.4*u;g.beginPath();g.moveTo(x,h*.3);g.lineTo(x,h*.85);g.stroke();}}}
+};
+function drawVessel(g,w,h,u,r,elastic){g.fillStyle='#f6dce6';g.fillRect(0,0,w,h);
+ for(let i=0;i<60;i++){g.strokeStyle='rgba(220,140,170,.6)';g.lineWidth=1.2*u;g.beginPath();const x=r()*w,y=r()*h;g.moveTo(x,y);g.quadraticCurveTo(x+20*u,y+(r()-.5)*20*u,x+40*u,y);g.stroke();}
+ for(let i=0;i<50;i++)ell(g,r()*w,r()*h,5*u,1.2*u,r()*3,HEM);
+ const cx=w/2,cy=h/2,m=Math.min(w,h),Lr=m*.2,M1=Lr+6*u,M2=m*(elastic?.4:.36);
+ circ(g,cx,cy,M2+4*u,'#e8a5bd');circ(g,cx,cy,M2,'#df89a8');
+ if(elastic){for(let rr=M1+5*u;rr<M2;rr+=6.5*u){g.strokeStyle='#b8477a';g.lineWidth=1.1*u;g.beginPath();for(let a=0;a<=TAU+.01;a+=.03)g.lineTo(cx+Math.cos(a)*(rr+Math.sin(a*30)*1.2*u),cy+Math.sin(a)*(rr+Math.sin(a*30)*1.2*u));g.stroke();}}
+ const n=elastic?220:420;for(let i=0;i<n;i++){const a=r()*TAU,d=M1+r()*(M2-M1);ell(g,cx+Math.cos(a)*d,cy+Math.sin(a)*d,5*u,1.3*u,a+Math.PI/2,HEM2);}
+ g.strokeStyle='#a4326a';g.lineWidth=2.2*u;g.beginPath();for(let a=0;a<=TAU+.01;a+=.02){const rr=Lr+4*u+Math.sin(a*24)*1.8*u;g.lineTo(cx+Math.cos(a)*rr,cy+Math.sin(a)*rr);}g.stroke();
+ circ(g,cx,cy,Lr+1.5*u,'#f9e6ed');circ(g,cx,cy,Lr,'#fff9fb');
+ for(let i=0;i<26;i++){const a=r()*TAU,d=r()*Lr*.8;circ(g,cx+Math.cos(a)*d,cy+Math.sin(a)*d,2.6*u,'#e25563');}
+ for(let i=0;i<5;i++){const a=r()*TAU,d=M2+14*u+r()*20*u;circ(g,cx+Math.cos(a)*d,cy+Math.sin(a)*d,5*u,'#fff9fb','#c35a84',1.4*u);}}
+
+function drawHisto(cv,key,seed){
+  const H=HISTO[key];if(!H)return;const dpr=Math.min(2,window.devicePixelRatio||1);
+  const w=cv.clientWidth||300,h=cv.clientHeight||190;cv.width=Math.round(w*dpr);cv.height=Math.round(h*dpr);
+  const g=cv.getContext('2d');g.setTransform(dpr,0,0,dpr,0,0);const u=Math.max(w,h)/340;const r=RNG(seed||key.length*977+13);
+  g.save();H.draw(g,w,h,u,r);g.restore();
+  const vg=g.createRadialGradient(w/2,h/2,Math.min(w,h)*.28,w/2,h/2,Math.max(w,h)*.72);vg.addColorStop(0,'rgba(0,0,0,0)');vg.addColorStop(1,'rgba(0,0,0,.5)');g.fillStyle=vg;g.fillRect(0,0,w,h);
+  const bl=40*u;g.fillStyle='rgba(0,0,0,.55)';g.fillRect(8,h-24,bl+56,18);g.fillStyle='#fff';g.fillRect(14,h-16,bl,3);g.font=`500 11px "Barlow Semi Condensed",sans-serif`;g.fillText(H.scale,20+bl,h-11);
+}
+</script>
+<script>window.CORPUS={data:"data/",version:"v1.0.0"};</script>
+<script>
+if(window.corpusDesktop){(function(){const D=window.corpusDesktop;const box=document.createElement('div');box.className='upd';box.hidden=true;document.body.appendChild(box);
+ D.version().then(v=>{const l=document.getElementById('verLbl');if(l)l.textContent='v'+v;});
+ D.onUpdate(s=>{let h='';
+  if(s.status==='downloading')h=`<b>Downloading update${s.version?' '+s.version:''}…</b><span>${s.percent||0}% · you can keep working</span>`;
+  else if(s.status==='ready')h=`<b>Corpus ${s.version} is ready</b><span>Restart to finish updating. It will also install the next time you quit.</span><div class="acts"><button class="btn" id="updLater">Later</button><button class="btn" id="updNow">Restart now</button></div>`;
+  else if(s.status==='manual')h=`<b>Corpus ${s.version} is available</b><span>This build can't install updates by itself. Download the new version to replace it.</span><div class="acts"><button class="btn" id="updLater">Later</button><button class="btn" id="updGet">Download</button></div>`;
+  box.innerHTML=h;box.hidden=!h;
+  const n=document.getElementById('updNow');if(n)n.onclick=()=>D.installUpdate();const g=document.getElementById('updGet');if(g)g.onclick=()=>D.openDownload();const l=document.getElementById('updLater');if(l)l.onclick=()=>{box.hidden=true;};});
+})();}
+</script>
+<script type="module">
+import * as THREE from 'three';
+import {OrbitControls} from 'three/addons/controls/OrbitControls.js';
+import {RoomEnvironment} from 'three/addons/environments/RoomEnvironment.js';
+
+const CFG=window.CORPUS||{};const DATA=CFG.data||'data/';const VERSION=CFG.version||'web';
+const $=id=>document.getElementById(id);
+const esc=s=>String(s??'').replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+const cap=s=>s?s.charAt(0).toUpperCase()+s.slice(1):s;
+const V3=(x,y,z)=>new THREE.Vector3(x,y,z);
+const SIDE={R:'right',L:'left',M:''};
+
+/* ================= load ================= */
+const FILES=['bone','muscle','joint','vessel','nerve','organ','skin'];
+async function load(){
+  const man=await (await fetch(DATA+'manifest.json')).json();
+  const v1=await (await fetch(DATA+'curated.json')).json();
+  const bins={};let n=0;
+  await Promise.all(FILES.map(async f=>{const r=await fetch(DATA+f+'.bin');bins[f]=new Uint8Array(await r.arrayBuffer());n++;$('loadBar').style.width=(n/FILES.length*100)+'%';$('loadTxt').textContent=`Assembling specimen · ${n}/${FILES.length} systems`;}));
+  return {man,bins,v1};
+}
+
+/* ================= curated knowledge ================= */
+const CUR_MAP=[
+ [/^(frontal|parietal|occipital|temporal|sphenoid|ethmoid|palatine|lacrimal|zygomatic|nasal) bone|^maxilla|^vomer|cells of ethmoid|^inferior nasal concha/,'cran'],[/^mandible/,'mand'],[/^(atlas|axis|vertebra c)/,'cerv'],[/^vertebra t/,'thor'],[/^vertebra l/,'lumb'],[/^(sacrum|coccyx)/,'sacrum'],
+ [/sternum|xiphoid/,'stern'],[/ rib$|costal cartilage/,'ribs'],[/^clavicle/,'clav'],[/^scapula/,'scap'],[/^humerus/,'hum'],[/^ulna$/,'ulna'],[/^radius$/,'rad'],
+ [/(scaphoid|lunate|triquetrum|pisiform|trapezium|trapezoid|capitate|hamate) bone|metacarpal|of hand$/,'hand'],[/^hip bone/,'pelv'],[/^femur/,'fem'],[/^patella/,'pat'],[/^tibia$/,'tibia'],[/^fibula$/,'fibu'],[/^(talus|calcaneus)|navicular|cuboid|cuneiform|metatarsal|of foot$/,'foot'],
+ [/sternocleidomastoid/,'scm'],[/trapezius/,'trap'],[/deltoid muscle/,'delt'],[/pectoralis major/,'pec'],[/serratus anterior/,'serr'],[/biceps brachii/,'bic'],[/triceps brachii/,'tri'],[/rectus abdominis/,'rab'],[/external oblique/,'eob'],[/internal oblique/,'iob'],[/^diaphragm/,'dia'],
+ [/iliacus|psoas major/,'ilio'],[/rectus femoris|vastus/,'quad'],[/adductor (longus|brevis|magnus)|gracilis|pectineus/,'add'],[/tensor fasciae latae|iliotibial/,'tfl'],[/tibialis anterior/,'tibant'],[/fibularis longus/,'fibl'],[/gastrocnemius/,'gast'],[/gluteus maximus/,'gmax'],[/gluteus medius/,'gmed'],
+ [/biceps femoris|semitendinosus|semimembranosus/,'ham'],[/latissimus dorsi/,'lat'],[/^(iliocostalis|longissimus|spinalis) /,'es'],[/quadratus lumborum/,'ql'],
+ [/telencephalon|cerebr|gyrus|lobe of brain|cerebell|pons|midbrain|medulla oblongata|thalamus|hippocamp/,'brain'],[/spinal cord|segment of spinal/,'cord'],[/brachial plexus|trunk of brachial|cord of brachial/,'bplex'],[/^median nerve/,'median'],[/^ulnar nerve/,'ulnarn'],[/^radial nerve/,'radn'],[/^femoral nerve/,'femn'],[/^sciatic nerve/,'sci'],[/common fibular nerve/,'cfn'],
+ [/ventricle$|atrium$|^heart|wall of heart/,'heart'],[/aort/,'aorta'],[/common carotid/,'carot'],[/^(brachial|radial|ulnar|axillary) artery/,'brach'],[/^(femoral|popliteal) artery/,'femart'],
+ [/lung|pulmonary segment/,'lungs'],[/liver|hepatic segment|lobe of liver/,'liver'],[/stomach|pylor|fundus of stomach/,'stom'],[/kidney|renal (cortex|medulla|pelvis)/,'kid'],[/colon|jejunum|ileum|duodenum|caecum|cecum|rectum|appendix/,'intest'],
+ [/glenohumeral|coracohumeral|glenoid labrum/,'shoulder'],[/annular ligament of radius|collateral ligament of elbow|elbow/,'elbow'],[/radiocarpal|palmar carpal|dorsal carpal/,'wrist'],[/iliofemoral|pubofemoral|ischiofemoral|acetabular labrum|ligament of head of femur/,'hip'],[/cruciate|menisc|patellar ligament|collateral ligament of knee|tibial collateral|fibular collateral/,'knee'],[/talofibular|calcaneofibular|deltoid ligament|tibiofibular/,'ankle']
+];
+const LIMB={coracobrachialis:['Coracoid process','Medial humerus, mid-shaft','Flexes and adducts the arm','Musculocutaneous nerve (C5–C7)'],brachialis:['Distal half of anterior humerus','Coronoid process and ulnar tuberosity','Pure elbow flexor in every forearm position','Musculocutaneous (C5–C6), small radial contribution'],
+ anconeus:['Lateral epicondyle','Lateral olecranon','Assists elbow extension, steadies the joint','Radial nerve (C7–C8)'],brachioradialis:['Lateral supracondylar ridge','Base of radial styloid','Elbow flexion, strongest in mid-position','Radial nerve (C5–C6)'],
+ 'pronator teres':['Medial epicondyle, coronoid process','Lateral radius, mid-shaft','Pronation, weak elbow flexion','Median nerve (C6–C7)'],'pronator quadratus':['Distal anterior ulna','Distal anterior radius','Primary pronator','Anterior interosseous nerve (C7–C8)'],
+ supinator:['Lateral epicondyle, supinator crest of ulna','Proximal lateral radius','Supination','Posterior interosseous nerve (C5–C6)'],'flexor carpi radialis':['Medial epicondyle','Bases of 2nd–3rd metacarpals','Wrist flexion, radial deviation','Median nerve (C6–C7)'],
+ 'flexor carpi ulnaris':['Medial epicondyle; olecranon','Pisiform, hamate, 5th metacarpal','Wrist flexion, ulnar deviation','Ulnar nerve (C7–C8)'],'flexor digitorum superficialis':['Medial epicondyle, coronoid, radius','Middle phalanges 2–5','Flexes PIP and MCP joints','Median nerve (C7–T1)'],
+ 'extensor carpi radialis longus':['Lateral supracondylar ridge','Base of 2nd metacarpal','Wrist extension, radial deviation','Radial nerve (C6–C7)'],'extensor carpi radialis brevis':['Lateral epicondyle','Base of 3rd metacarpal','Wrist extension','Posterior interosseous nerve (C7–C8)'],
+ 'extensor carpi ulnaris':['Lateral epicondyle; posterior ulna','Base of 5th metacarpal','Wrist extension, ulnar deviation','Posterior interosseous nerve (C7–C8)'],
+ supraspinatus:['Supraspinous fossa of scapula','Greater tubercle (superior facet)','Initiates abduction; compresses humeral head','Suprascapular nerve (C5–C6)'],infraspinatus:['Infraspinous fossa','Greater tubercle (middle facet)','External rotation','Suprascapular nerve (C5–C6)'],
+ 'teres minor':['Lateral border of scapula','Greater tubercle (inferior facet)','External rotation','Axillary nerve (C5–C6)'],subscapularis:['Subscapular fossa','Lesser tubercle','Internal rotation','Upper and lower subscapular nerves (C5–C7)'],
+ 'teres major':['Inferior angle of scapula','Medial lip of bicipital groove','Internal rotation, adduction, extension','Lower subscapular nerve (C5–C7)'],soleus:['Posterior fibula and soleal line of tibia','Calcaneus via Achilles tendon','Plantarflexion; postural control','Tibial nerve (S1–S2)'],
+ 'tibialis posterior':['Interosseous membrane, tibia, fibula','Navicular tuberosity, cuneiforms, metatarsals 2–4','Inversion, plantarflexion, supports medial arch','Tibial nerve (L4–L5)'],sartorius:['ASIS','Pes anserinus (medial tibia)','Hip flexion, abduction, external rotation; knee flexion','Femoral nerve (L2–L3)'],
+ piriformis:['Anterior sacrum','Greater trochanter','External rotation of extended hip; abduction of flexed hip','Nerve to piriformis (S1–S2)'],'gluteus minimus':['External ilium','Anterior greater trochanter','Abduction, internal rotation','Superior gluteal nerve (L4–S1)'],
+ 'rhomboid major':['Spinous processes T2–T5','Medial border of scapula','Retraction, downward rotation','Dorsal scapular nerve (C4–C5)'],'rhomboid minor':['Spinous processes C7–T1','Medial border at spine of scapula','Retraction','Dorsal scapular nerve (C4–C5)'],
+ 'levator scapulae':['Transverse processes C1–C4','Superior angle of scapula','Elevation, downward rotation','Dorsal scapular nerve, C3–C4'],masseter:['Zygomatic arch','Angle and ramus of mandible','Elevates mandible (closes jaw)','Masseteric nerve (CN V3)'],
+ temporalis:['Temporal fossa','Coronoid process of mandible','Elevates and retracts mandible','Deep temporal nerves (CN V3)'],'transversus abdominis':['Thoracolumbar fascia, iliac crest, costal cartilages 7–12','Linea alba, pubic crest','Compresses abdomen; stiffens lumbar spine','T7–L1']};
+function curatedFor(m,V1){
+  const n=m.n.toLowerCase();
+  for(const [re,id] of CUR_MAP)if(re.test(n)&&V1.byId[id])return V1.byId[id];
+  return null;
+}
+function limbFor(m){const n=m.n.toLowerCase().replace(/ muscle$/,'');for(const k of Object.keys(LIMB))if(n.includes(k))return LIMB[k];return null;}
+function histoFor(m,cur){
+  if(cur&&cur.histo)return cur.histo;const n=m.n.toLowerCase();
+  return {bone:'bone',cartilage:'cartilage',tooth:'bone',ligament:'tendon',fascia:'tendon',tendon:'tendon',muscle:'skm',heart:'cardiac',artery:/aort|carotid|pulmonary trunk|brachiocephalic trunk|subclavian/.test(n)?'elastic':'artery',vein:'artery',nerve:'nerve',cns:/spinal cord/.test(n)?'cord':'cortex',
+    lymph:null,sense:null,skin:null,organ:/lung|bronch/.test(n)?'lung':/liver|hepat/.test(n)?'liver':/stomach/.test(n)?'stomach':/kidney|renal/.test(n)?'kidney':/colon|jejun|ile|duoden|intestin|caec|cec/.test(n)?'gut':null}[m.k]||null;
+}
+
+/* ================= kinds & looks ================= */
+const LAYERS=[['skin','Skin'],['bone','Bones'],['joint','Ligaments, fascia & joints'],['muscle','Muscles'],['vessel','Heart & vessels'],['nerve','Nervous system'],['organ','Organs & glands']];
+const KCOL={bone:0xe6dac4,cartilage:0xc9dde6,tooth:0xf3efe3,ligament:0xd9d2bf,tendon:0xe8e0cc,muscle:0xa8322e,fascia:0xd8cfc0,heart:0xa0282c,artery:0xd12f3c,vein:0x3b62c4,nerve:0xf0c64a,cns:0xe0b8b0,sense:0xd9c3b0,lymph:0x86c46a,organ:0xc98a7a,skin:0xe8b89a};
+const SCOL={bone:0xbfe6ff,cartilage:0x9fd8ff,tooth:0xdff4ff,ligament:0x9fd8ff,tendon:0xdfe8ff,muscle:0xff5a4e,fascia:0xffb0a0,heart:0xff4d62,artery:0xff4d62,vein:0x6f9bff,nerve:0xffd35a,cns:0xffc8e0,sense:0xffd8b0,lymph:0x9cff80,organ:0xff9cc8,skin:0x5fb2ff};
+const DOT={bone:'#e6dac4',cartilage:'#c9dde6',tooth:'#f3efe3',ligament:'#d9d2bf',tendon:'#e8e0cc',muscle:'#d8504a',fascia:'#d8cfc0',heart:'#c0303a',artery:'#ff4d55',vein:'#5b82e4',nerve:'#f2c94c',cns:'#e8c0b8',sense:'#d9c3b0',lymph:'#86c46a',organ:'#d49a8a',skin:'#e8b89a'};
+const KNAME={bone:'Bone',cartilage:'Cartilage',tooth:'Tooth',ligament:'Ligament / joint',tendon:'Tendon',muscle:'Muscle',fascia:'Fascia / tendon',heart:'Heart',artery:'Artery',vein:'Vein',nerve:'Nerve',cns:'Central nervous system',sense:'Sense organ',lymph:'Lymphoid',organ:'Organ',skin:'Skin'};
+
+/* ================= renderer ================= */
+const vp=$('viewport');
+const renderer=new THREE.WebGLRenderer({antialias:true,alpha:true,powerPreference:'high-performance'});
+renderer.setPixelRatio(Math.min(2,devicePixelRatio||1));renderer.localClippingEnabled=true;renderer.toneMapping=THREE.ACESFilmicToneMapping;renderer.toneMappingExposure=1.05;
+vp.prepend(renderer.domElement);
+const scene=new THREE.Scene();
+scene.environment=new THREE.PMREMGenerator(renderer).fromScene(new RoomEnvironment(renderer),.04).texture;
+scene.add(new THREE.HemisphereLight(0xcfe6ff,0x201510,.5));
+const key=new THREE.DirectionalLight(0xffffff,1.5);key.position.set(4,8,10);scene.add(key);
+const rimL=new THREE.DirectionalLight(0x7fc4ff,1.0);rimL.position.set(-8,3,-8);scene.add(rimL);
+const camera=new THREE.PerspectiveCamera(32,1,.05,400);camera.position.set(0,1.5,36);
+const controls=new OrbitControls(camera,renderer.domElement);controls.enableDamping=true;controls.dampingFactor=.08;controls.minDistance=1.2;controls.maxDistance=90;controls.target.set(0,1.5,0);
+const root=new THREE.Group();root.rotation.x=-Math.PI/2;root.scale.setScalar(.01);scene.add(root);
+const clipPlane=new THREE.Plane(V3(0,-1,0),0);
+
+/* ================= state ================= */
+let ROOT0,MAN,V1,items=[],bones=[],skeleton,pickMats=[],SEGI={};
+const ui={mode:'tissue',heat:true,fade:false,iso:false,section:false,sectionAxis:'y',sectionPos:.5,sel:null,hover:null,preset:null,labels:true,tab:'st',mtab:'spine',chain:null};
+const layer={skin:false,bone:true,joint:false,muscle:true,vessel:true,nerve:true,organ:true};
+const pose={};let restMinY=0,baseRootPos=new THREE.Vector3();
+
+/* ================= build ================= */
+function tissueMat(k){const c=new THREE.Color(KCOL[k]);if(k==='muscle')c.offsetHSL((Math.random()-.5)*.03,(Math.random()-.5)*.12,(Math.random()-.5)*.08);
+  const m=new THREE.MeshStandardMaterial({color:c,roughness:k==='bone'?.62:k==='muscle'?.5:k==='skin'?.7:.4,metalness:0,side:(k==='muscle'||k==='skin'||k==='organ'||k==='cns')?THREE.DoubleSide:THREE.FrontSide,
+    emissive:k==='nerve'?0x2a1c00:0x000000,transparent:k==='skin',opacity:k==='skin'?.35:1,depthWrite:k!=='skin'});
+  m.userData.base=c.clone();m.userData.baseOpacity=m.opacity;m.userData.baseEm=m.emissive.clone();return m;}
+function scanMat(k){return new THREE.ShaderMaterial({uniforms:{uColor:{value:new THREE.Color(SCOL[k])},uBoost:{value:0},uOpacity:{value:k==='skin'?.55:1}},clipping:true,transparent:true,depthWrite:false,side:THREE.DoubleSide,blending:THREE.AdditiveBlending,
+  vertexShader:`#include <common>
+#include <morphtarget_pars_vertex>
+#include <skinning_pars_vertex>
+#include <clipping_planes_pars_vertex>
+varying vec3 vN;varying vec3 vV;
+void main(){
+#include <beginnormal_vertex>
+#include <morphnormal_vertex>
+#include <skinbase_vertex>
+#include <skinnormal_vertex>
+#include <defaultnormal_vertex>
+#include <begin_vertex>
+#include <morphtarget_vertex>
+#include <skinning_vertex>
+#include <project_vertex>
+#include <clipping_planes_vertex>
+vN=normalize(transformedNormal);vV=normalize(-mvPosition.xyz);}`,
+  fragmentShader:`#include <common>
+#include <clipping_planes_pars_fragment>
+uniform vec3 uColor;uniform float uBoost;uniform float uOpacity;varying vec3 vN;varying vec3 vV;
+void main(){
+#include <clipping_planes_fragment>
+float f=pow(1.0-abs(dot(normalize(vN),normalize(vV))),2.2);gl_FragColor=vec4(uColor*(0.08+1.4*f)*(1.0+uBoost),(0.05+0.8*f)*uOpacity);}`});}
+
+function build(){
+  const {lo,hi,seg,par,piv}=MAN;SEGI=Object.fromEntries(seg.map((s,i)=>[s,i]));
+  bones=seg.map((n,i)=>{const b=new THREE.Bone();b.name=n;return b;});
+  seg.forEach((n,i)=>{const p=V3(...piv[i]);if(par[i]<0){bones[i].position.copy(p);root.add(bones[i]);}else{bones[i].position.copy(p).sub(V3(...piv[par[i]]));bones[par[i]].add(bones[i]);}});
+  root.updateMatrixWorld(true);ROOT0=root.matrixWorld.clone();skeleton=new THREE.Skeleton(bones);
+  const rig=MAN.m;let idx=0;
+  for(const m of rig){
+    const buf=m.f;const bytes=BINS[buf];const q=new Uint16Array(bytes.buffer,m.o,m.v*3);const ix=new Uint16Array(bytes.buffer,m.o+m.v*6,m.t*3);
+    const pos=new Float32Array(m.v*3);for(let i=0;i<m.v;i++)for(let a=0;a<3;a++)pos[i*3+a]=lo[a]+q[i*3+a]/65535*(hi[a]-lo[a]);
+    const g=new THREE.BufferGeometry();g.setIndex(new THREE.BufferAttribute(new Uint16Array(ix),1));g.setAttribute('position',new THREE.BufferAttribute(pos,3));g.computeVertexNormals();
+    const it={i:idx++,m,name:m.n,side:m.s,kind:m.k,layer:m.f,grp:m.g,grp2:m.g2,visible:true,ratio:1};
+    it.cur=curatedFor(m,V1);it.limb=m.k==='muscle'?limbFor(m):null;it.histo=histoFor(m,it.cur);
+    it.tMat=tissueMat(m.k);it.sMat=scanMat(m.k);
+    let mesh;
+    if(m.sk){
+      let o=m.o+m.v*6+m.t*6;const s0=new Uint8Array(bytes.buffer,o,m.v),s1=new Uint8Array(bytes.buffer,o+m.v,m.v),w0=new Uint8Array(bytes.buffer,o+2*m.v,m.v);
+      const si=new Uint16Array(m.v*4),sw=new Float32Array(m.v*4);for(let i=0;i<m.v;i++){si[i*4]=s0[i];si[i*4+1]=s1[i];sw[i*4]=w0[i]/255;sw[i*4+1]=1-w0[i]/255;}
+      g.setAttribute('skinIndex',new THREE.Uint16BufferAttribute(si,4));g.setAttribute('skinWeight',new THREE.Float32BufferAttribute(sw,4));
+      if(m.a){const A=V3(...m.a[0]),B=V3(...m.a[2]),ab=B.clone().sub(A),L2=ab.lengthSq();const mo=new Float32Array(m.v*3);const v=new THREE.Vector3();
+        for(let i=0;i<m.v;i++){v.set(pos[i*3],pos[i*3+1],pos[i*3+2]).sub(A);const u=Math.max(0,Math.min(1,v.dot(ab)/L2));v.addScaledVector(ab,-u);const bl=Math.pow(Math.sin(Math.PI*u),1.3);mo[i*3]=v.x*bl;mo[i*3+1]=v.y*bl;mo[i*3+2]=v.z*bl;}
+        g.morphAttributes.position=[new THREE.BufferAttribute(mo,3)];g.morphTargetsRelative=true;it.A=A;it.B=B;it.sa=m.a[1];it.sb=m.a[3];it.L0=A.distanceTo(B);}
+      mesh=new THREE.SkinnedMesh(g,it.tMat);root.add(mesh);mesh.bind(skeleton,root.matrixWorld.clone());mesh.frustumCulled=false;
+      if(m.a)mesh.morphTargetInfluences=[0];it.dom=m.dm;
+    }else{
+      mesh=new THREE.Mesh(g,it.tMat);const b=bones[m.rg];mesh.position.copy(V3(...piv[m.rg])).negate();b.add(mesh);it.dom=m.rg;
+    }
+    g.computeBoundingSphere();mesh.userData.i=it.i;it.mesh=mesh;it.c=V3(...m.c);items.push(it);
+    const pm=new THREE.MeshBasicMaterial({color:new THREE.Color().setRGB(((it.i+1)&255)/255,(((it.i+1)>>8)&255)/255,(((it.i+1)>>16)&255)/255),toneMapped:false,side:THREE.DoubleSide});pickMats.push(pm);
+  }
+}
+
+/* ================= joints ================= */
+const DOFS={};const GROUPS_M={spine:'Spine',neck:'Neck & jaw',arm_r:'Right arm',arm_l:'Left arm',leg_r:'Right leg',leg_l:'Left leg'};
+function defDofs(){
+  const P=n=>V3(...MAN.piv[SEGI[n]]),LM=k=>V3(...MAN.lm[k]),AXv=k=>V3(...MAN.ax[k]);
+  const X=V3(1,0,0),Y=V3(0,1,0),Z=V3(0,0,1);
+  const lat=s=>s==='r'?-1:1; // lateral direction sign on x
+  const add=(id,o)=>{DOFS[id]={...o,v:o.rest??0};pose[id]=o.rest??0;};
+  add('trFlex',{g:'spine',lab:'Trunk flexion',min:-30,max:80,parts:[['lumbar',.45],['thorax',.55]],axis:X,test:[LM('headtop'),p=>p.y<0,'y']});
+  add('trLat',{g:'spine',lab:'Side-bend (right +)',min:-35,max:35,parts:[['lumbar',.45],['thorax',.55]],axis:Y,test:[LM('headtop'),d=>d.x<0]});
+  add('trRot',{g:'spine',lab:'Rotation (right +)',min:-45,max:45,parts:[['lumbar',.25],['thorax',.75]],axis:Z,test:[LM('sternum'),d=>d.x<0]});
+  add('nkFlex',{g:'neck',lab:'Neck flexion',min:-60,max:50,parts:[['neck',.6],['head',.4]],axis:X,test:[LM('headtop'),d=>d.y<0]});
+  add('nkRot',{g:'neck',lab:'Neck rotation (right +)',min:-80,max:80,parts:[['neck',.55],['head',.45]],axis:Z,test:[LM('nose'),d=>d.x<0]});
+  add('nkLat',{g:'neck',lab:'Neck side-bend (right +)',min:-45,max:45,parts:[['neck',.6],['head',.4]],axis:Y,test:[LM('headtop'),d=>d.x<0]});
+  add('jaw',{g:'neck',lab:'Mouth opening',min:0,max:30,parts:[['jaw',1]],axis:X,test:[LM('chin'),d=>d.z<0]});
+  for(const s of ['r','l']){const S=s==='r'?'Right':'Left';
+    add('shFlex.'+s,{g:'arm_'+s,lab:'Shoulder flexion',min:-50,max:180,parts:[['hum.'+s,1]],axis:X,test:[LM('elbow.'+s),d=>d.y<0]});
+    add('shAbd.'+s,{g:'arm_'+s,lab:'Shoulder abduction',min:0,max:180,parts:[['hum.'+s,1]],axis:Y,test:[LM('elbow.'+s),d=>d.x*lat(s)>0]});
+    add('shRot.'+s,{g:'arm_'+s,lab:'Shoulder rotation (IR +)',min:-90,max:70,parts:[['hum.'+s,1]],axis:P('ulna.'+s).sub(P('hum.'+s)).normalize(),test:[LM('medepi.'+s),d=>d.y>0]});
+    add('elbow.'+s,{g:'arm_'+s,lab:'Elbow flexion',min:0,max:150,parts:[['ulna.'+s,1]],axis:AXv('el.'+s),test:[LM('wrist.'+s),d=>d.y<0]});
+    add('fore.'+s,{g:'arm_'+s,lab:'Forearm (sup − / pro +)',min:-80,max:80,rest:-80,off:80,parts:[['rad.'+s,1]],axis:AXv('pr.'+s),test:[LM('thumb.'+s),d=>d.x*lat(s)<0,90]});
+    add('wrist.'+s,{g:'arm_'+s,lab:'Wrist (ext − / flex +)',min:-70,max:80,parts:[['hand.'+s,1]],axis:X,test:[LM('finger.'+s),d=>d.y<0]});
+    add('hipFlex.'+s,{g:'leg_'+s,lab:'Hip flexion',min:-30,max:120,parts:[['fem.'+s,1]],axis:X,test:[LM('knee.'+s),d=>d.y<0]});
+    add('hipAbd.'+s,{g:'leg_'+s,lab:'Hip abduction',min:-30,max:45,parts:[['fem.'+s,1]],axis:Y,test:[LM('knee.'+s),d=>d.x*lat(s)>0]});
+    add('hipRot.'+s,{g:'leg_'+s,lab:'Hip rotation (IR +)',min:-45,max:45,parts:[['fem.'+s,1]],axis:P('leg.'+s).sub(P('fem.'+s)).normalize(),test:[LM('patella.'+s),d=>d.x*lat(s)<0]});
+    add('knee.'+s,{g:'leg_'+s,lab:'Knee flexion',min:0,max:135,parts:[['leg.'+s,1]],axis:X,test:[LM('ankle.'+s),d=>d.y>0]});
+    add('ankle.'+s,{g:'leg_'+s,lab:'Ankle (plantar − / dorsi +)',min:-50,max:20,parts:[['foot.'+s,1]],axis:AXv('ank.'+s),test:[LM('toe.'+s),d=>d.z>0]});
+  }
+  // calibrate signs
+  for(const [id,d] of Object.entries(DOFS)){
+    const pv=P(d.parts[0][0]);const [pt,fn,ang]=d.test;const q=new THREE.Quaternion().setFromAxisAngle(d.axis,(ang||30)*Math.PI/180);
+    const moved=pt.clone().sub(pv).applyQuaternion(q).add(pv);d.sg=fn(moved.clone().sub(pt))?1:-1;
+  }
+  const g=V3(0,1,0);for(const s of ['r','l']){const pv=P('girdle.'+s),gh=P('hum.'+s);const q=new THREE.Quaternion().setFromAxisAngle(g,30*Math.PI/180);DOFS['_g.'+s]={sg:gh.clone().sub(pv).applyQuaternion(q).add(pv).z>gh.z?1:-1};}
+}
+const qa=new THREE.Quaternion();
+let rhythm={};
+function applyPose(){
+  bones.forEach(b=>b.quaternion.identity());
+  const eff={...pose};
+  for(const s of ['r','l']){const f=Math.max(0,eff['shFlex.'+s]),a=eff['shAbd.'+s],e=f+a,g=Math.min(60,e/3);rhythm[s]={g,gh:e-g};
+    qa.setFromAxisAngle(V3(0,1,0),DOFS['_g.'+s].sg*g*Math.PI/180);bones[SEGI['girdle.'+s]].quaternion.copy(qa);bones[SEGI['hum.'+s]].quaternion.copy(qa).invert();}
+  const order=['trLat','trFlex','trRot','nkLat','nkFlex','nkRot','jaw'];for(const s of ['r','l'])order.push('shAbd.'+s,'shFlex.'+s,'shRot.'+s,'elbow.'+s,'fore.'+s,'wrist.'+s,'hipAbd.'+s,'hipFlex.'+s,'hipRot.'+s,'knee.'+s,'ankle.'+s);
+  for(const id of order){const d=DOFS[id];const val=(eff[id]+(d.off||0))*d.sg*Math.PI/180;if(!val)continue;
+    for(const [seg,fr] of d.parts){qa.setFromAxisAngle(d.axis,val*fr);bones[SEGI[seg]].quaternion.multiply(qa);}}
+  // ground contact
+  root.position.copy(baseRootPos);root.updateMatrixWorld(true);
+  const anchor=ui.preset&&PRESETS[ui.preset].anchor;
+  if(anchor){const w=worldLM(anchor);root.position.add(restLMW[anchor].clone().sub(w));}
+  else{let mn=1e9;for(const k of FOOTLM){mn=Math.min(mn,worldLM(k).y);}root.position.y+=restMinY-mn;}
+  root.updateMatrixWorld(true);
+  // muscle lengths & bulge
+  for(const it of items){if(!it.A)continue;const a=bonePt(it.sa,it.A),b=bonePt(it.sb,it.B);it.ratio=a.distanceTo(b)/(it.L0*.01);
+    it.mesh.morphTargetInfluences[0]=Math.max(-.22,Math.min(.4,(1/Math.sqrt(it.ratio)-1)*1.4));}
+  paint();dirty=true;
+}
+const _m=new THREE.Matrix4();
+function bonePt(si,p){_m.multiplyMatrices(bones[si].matrixWorld,skeleton.boneInverses[si]);return p.clone().applyMatrix4(ROOT0).applyMatrix4(_m);}
+const LMSEG={};let FOOTLM=[],restLMW={};
+function worldLM(k){return bonePt(LMSEG[k],V3(...MAN.lm[k]));}
+function setupLM(){
+  const S=SEGI;for(const s of ['r','l']){LMSEG['toe.'+s]=S['foot.'+s];LMSEG['heel.'+s]=S['foot.'+s];LMSEG['ankle.'+s]=S['foot.'+s];LMSEG['fingerTip.'+s]=S['hand.'+s];}
+  LMSEG.headtop=S.head;FOOTLM=['toe.r','heel.r','toe.l','heel.l'];
+  root.position.set(0,0,0);root.updateMatrixWorld(true);
+  baseRootPos.set(0,-7.3,0);root.position.copy(baseRootPos);root.updateMatrixWorld(true);
+  restMinY=Math.min(...FOOTLM.map(k=>worldLM(k).y));for(const k of Object.keys(LMSEG))restLMW[k]=worldLM(k);
+}
+
+/* ================= presets ================= */
+const sm=t=>t*t*(3-2*t);
+const PRESETS={
+ walk:{ab:'WALK',name:'Walking gait',T:1.2,f:t=>{const w=2*Math.PI*t,sr=Math.sin(w),sl=Math.sin(w+Math.PI);const leg=(s,x)=>({['hipFlex.'+s]:8+20*x,['knee.'+s]:Math.max(4,32+30*Math.sin(w*1+(s==='r'?-1.2:Math.PI-1.2))),['ankle.'+s]:-4+10*Math.sin(w+(s==='r'?.4:Math.PI+.4))});
+   return {...leg('r',sr),...leg('l',sl),'shFlex.r':-18*sr,'shFlex.l':-18*sl,'elbow.r':22,'elbow.l':22,'fore.r':0,'fore.l':0,trRot:5*sr};}},
+ squat:{ab:'SQUAT',name:'Squat',T:3.2,kf:[[0,{}],[1.6,{'hipFlex.r':100,'hipFlex.l':100,'knee.r':120,'knee.l':120,'ankle.r':22,'ankle.l':22,trFlex:35,'shFlex.r':90,'shFlex.l':90,'fore.r':0,'fore.l':0}],[3.2,{}]],anchor:'ankle.r'},
+ reach:{ab:'REACH',name:'Overhead reach',T:3.2,kf:[[0,{}],[1.6,{'shFlex.r':170,'shFlex.l':170,trFlex:-12,'fore.r':0,'fore.l':0}],[3.2,{}]]},
+ curl:{ab:'CURL',name:'Biceps curl (right)',T:2.4,kf:[[0,{'elbow.r':5}],[1.2,{'elbow.r':145}],[2.4,{'elbow.r':5}]]},
+ throw:{ab:'THROW',name:'Overhead throw (right)',T:2.6,kf:[[0,{'shAbd.r':30,'elbow.r':30,'fore.r':0}],[.9,{'shAbd.r':90,'shRot.r':-90,'elbow.r':95,'trRot':-30,'hipFlex.l':25,'knee.l':30,'fore.r':0}],[1.35,{'shAbd.r':95,'shRot.r':40,'elbow.r':20,trRot:35,trFlex:25,'hipFlex.l':45,'knee.l':40,'wrist.r':40,'fore.r':40}],[2.6,{'shAbd.r':30,'elbow.r':30,'fore.r':0}]]},
+ neck:{ab:'NECK',name:'Neck rotation',T:3,kf:[[0,{}],[.75,{nkRot:70}],[2.25,{nkRot:-70}],[3,{}]]},
+ jaw:{ab:'JAW',name:'Mouth opening',T:2,kf:[[0,{}],[1,{jaw:26}],[2,{}]]},
+ valg:{ab:'VALG',name:'Single-leg squat with knee valgus',T:3.4,chain:'val',anchor:'ankle.r',kf:[[0,{'hipFlex.l':40,'knee.l':70}],[1.7,{'hipFlex.r':70,'knee.r':80,'ankle.r':20,'hipAbd.r':-14,'hipRot.r':22,trFlex:25,'hipFlex.l':45,'knee.l':80,trLat:-8}],[3.4,{'hipFlex.l':40,'knee.l':70}]]}
+};
+let presetT0=0;
+function runPreset(now){const P=PRESETS[ui.preset];const t=((now-presetT0)/1000)%P.T;let tgt;
+  if(P.f)tgt=P.f(t/P.T);else{const kf=P.kf;let i=0;while(i<kf.length-2&&t>kf[i+1][0])i++;const [t0,a]=kf[i],[t1,b]=kf[i+1];const u=sm((t-t0)/(t1-t0));tgt={};
+    for(const id of Object.keys(DOFS)){if(id.startsWith('_'))continue;const r=DOFS[id].rest??0;const av=a[id]??r,bv=b[id]??r;tgt[id]=av+(bv-av)*u;}}
+  for(const id of Object.keys(pose)){pose[id]=tgt[id]??(DOFS[id].rest??0);}applyPose();}
+
+/* ================= appearance ================= */
+const HOT=new THREE.Color(0xff7a2e),COOL=new THREE.Color(0x3f7dff),SELC=new THREE.Color(0x3fd8ff),AMB=new THREE.Color(0xffb04a);const _c=new THREE.Color();
+let chainSet=new Set();
+function paint(){
+  const selSet=ui.sel!=null?new Set([ui.sel]):null;
+  for(const it of items){
+    const isSel=ui.sel===it.i,isHov=ui.hover===it.i,inCh=chainSet.has(it.i);const focus=selSet||chainSet.size;
+    const dim=focus&&!isSel&&!inCh&&(ui.fade||ui.iso);
+    it.mesh.visible=it.visible&&(layer[it.layer]||isSel||inCh)&&!(ui.iso&&focus&&!isSel&&!inCh);
+    if(!it.mesh.visible)continue;
+    const d=it.A?(it.ratio-1):0,k=Math.min(1,Math.abs(d)/.3);
+    if(ui.mode==='tissue'){const m=it.tMat;if(it.mesh.material!==m)it.mesh.material=m;
+      _c.copy(m.userData.base);if(ui.heat&&it.A&&Math.abs(d)>.01)_c.lerp(d<0?HOT:COOL,k*.85);m.color.copy(_c);
+      m.emissive.copy(isSel||isHov?SELC:inCh?AMB:m.userData.baseEm);m.emissiveIntensity=isSel?.5:isHov?.25:inCh?.45:1;
+      const op=dim?.1:m.userData.baseOpacity;const tr=op<1;if(m.transparent!==tr){m.transparent=tr;m.needsUpdate=true;}m.opacity=op;m.depthWrite=!tr;
+      const cp=ui.section?[clipPlane]:null;if((m.clippingPlanes||null)!==cp){m.clippingPlanes=cp;m.needsUpdate=true;}}
+    else{const m=it.sMat;if(it.mesh.material!==m)it.mesh.material=m;_c.set(SCOL[it.kind]);if(ui.heat&&it.A&&Math.abs(d)>.01)_c.lerp(d<0?HOT:COOL,k);
+      m.uniforms.uColor.value.copy(isSel?SELC:inCh?AMB:_c);m.uniforms.uBoost.value=isSel?1.2:isHov||inCh?.6:0;m.uniforms.uOpacity.value=(dim?.2:1)*(it.kind==='skin'?.55:1);
+      const cp=ui.section?[clipPlane]:null;if((m.clippingPlanes||null)!==cp){m.clippingPlanes=cp;m.needsUpdate=true;}}
+  }
+}
+function setSection(){const ax=ui.sectionAxis;const box={y:[0,18],z:[-2.2,2.2],x:[-3,3]}[ax];const c=box[0]+(box[1]-box[0])*ui.sectionPos;
+  const n=ax==='y'?V3(0,-1,0):ax==='z'?V3(0,0,-1):V3(1,0,0);clipPlane.set(n,ax==='x'?-c:c);paint();}
+
+/* ================= picking (GPU) ================= */
+const pickRT=new THREE.WebGLRenderTarget(1,1);const pix=new Uint8Array(4);
+function pick(e){
+  const r=renderer.domElement.getBoundingClientRect();const x=(e.clientX-r.left)*renderer.getPixelRatio(),y=(e.clientY-r.top)*renderer.getPixelRatio();
+  const W=r.width*renderer.getPixelRatio(),H=r.height*renderer.getPixelRatio();
+  const saved=[];for(const it of items){if(!it.mesh.visible)continue;if(it.kind==='skin'&&ui.mode!=='scan'&&it.mesh.material.opacity<.5){it.mesh.visible=false;saved.push([it,null]);continue;}
+    if(it.mesh.material.transparent&&it.mesh.material.opacity<.3){it.mesh.visible=false;saved.push([it,null]);continue;}
+    saved.push([it,it.mesh.material]);const pm=pickMats[it.i];pm.clippingPlanes=ui.section?[clipPlane]:null;it.mesh.material=pm;}
+  const env=scene.environment;scene.environment=null;camera.setViewOffset(W,H,x,y,1,1);renderer.setRenderTarget(pickRT);renderer.setClearColor(0,0);renderer.clear();renderer.render(scene,camera);
+  renderer.readRenderTargetPixels(pickRT,0,0,1,1,pix);renderer.setRenderTarget(null);camera.clearViewOffset();scene.environment=env;
+  for(const [it,m] of saved){if(m)it.mesh.material=m;else it.mesh.visible=true;}
+  const id=pix[0]|(pix[1]<<8)|(pix[2]<<16);return id?id-1:null;
+}
+
+/* ================= ring & slots ================= */
+const IC={skin:'<path d="M12 3c-2 0-3 1.5-3 3.5S10 10 12 10s3-1.5 3-3.5S14 3 12 3zM7 21l1-8 4-2 4 2 1 8"/>',bone:'<path d="M6.5 17.5L17.5 6.5"/><circle cx="5" cy="16.2" r="2"/><circle cx="7.8" cy="19" r="2"/><circle cx="16.2" cy="5" r="2"/><circle cx="19" cy="7.8" r="2"/>',
+ joint:'<circle cx="12" cy="12" r="5"/><path d="M12 2v5M12 17v5M2 12h5M17 12h5"/>',muscle:'<path d="M3 12c4-6.5 14-6.5 18 0-4 6.5-14 6.5-18 0z"/><path d="M6 12h12M7.5 9.6c3 1 6 1 9 0M7.5 14.4c3-1 6-1 9 0"/>',
+ vessel:'<path d="M12 20s-7-4.5-7-10a4 4 0 0 1 7-2.6A4 4 0 0 1 19 10c0 5.5-7 10-7 10z"/>',nerve:'<path d="M12 3v18M12 8L7 5M12 8l5-3M12 14l-6 2.5M12 14l6 2.5"/>',organ:'<path d="M12 4v7M9.5 7.5C6.5 7.5 4 12 4 17c0 2 2 2 4 1s2-3 2-6M14.5 7.5c3 0 5.5 4.5 5.5 9.5 0 2-2 2-4 1s-2-3-2-6"/>',
+ heat:'<path d="M12 3c3 4 5 6 5 10a5 5 0 0 1-10 0c0-2 1-3.5 2-4.5.5 2 1.5 3 3 3-1-3 0-6 0-8.5z"/>',fade:'<circle cx="9" cy="12" r="5"/><circle cx="15" cy="12" r="5" stroke-dasharray="2 2"/>',iso:'<circle cx="12" cy="12" r="3"/><path d="M4 8V4h4M16 4h4v4M20 16v4h-4M8 20H4v-4"/>',
+ section:'<path d="M4 16l8-4 8 4-8 4z"/><path d="M4 9l8-4 8 4-8 4z" stroke-dasharray="2 2"/>',labels:'<circle cx="5" cy="18" r="1.6"/><path d="M6 17l5-5h8M13 8h6"/>',
+ ant:'<circle cx="12" cy="5" r="2"/><path d="M12 7v8M7 10l5-1 5 1M12 15l-3 6M12 15l3 6"/>',rside:'<circle cx="12" cy="5" r="2"/><path d="M12 7v8l1 6M12 10l3 3"/>',post:'<circle cx="12" cy="5" r="2"/><path d="M12 7v8M7 10l5-1 5 1M12 15l-3 6M12 15l3 6" stroke-dasharray="2.5 1.5"/>',lside:'<circle cx="12" cy="5" r="2"/><path d="M12 7v8l-1 6M12 10l-3 3"/>',fit:'<path d="M4 9V4h5M15 4h5v5M20 15v5h-5M9 20H4v-5"/>'};
+const svgI=k=>`<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">${IC[k]}</svg>`;
+const SLOTS=[];
+LAYERS.forEach(([k,n],i)=>SLOTS.push({kind:'hi',key:k,a:-126+i*12,t:n,d:'Show or hide this layer'}));
+[['ant','Anterior view'],['rside','Right side view'],['post','Posterior view'],['lside','Left side view'],['fit','Fit whole body']].forEach(([k,n],i)=>SLOTS.push({kind:'mid',key:k,a:-23+i*11.5,t:n,d:'Move the camera'}));
+Object.entries(PRESETS).forEach(([k,p],i)=>SLOTS.push({kind:'low',key:k,a:140.5-i*11.5,t:p.name,d:'Play this movement on loop'}));
+[['heat','Muscle activity','Colour muscles by shortening (orange) or lengthening (blue)'],['fade','Fade others','Ghost everything except the selection'],['iso','Isolate','Show only the selection'],['section','Cross-section','Cut through the body with a plane'],['labels','Labels','Pin names to the selection and chain links']].forEach(([k,n,d],i)=>SLOTS.push({kind:'rig',key:k,a:156+i*12,t:n,d}));
+const pol=(a,r)=>{const t=a*Math.PI/180;return[(500+r*Math.cos(t)).toFixed(1),(500+r*Math.sin(t)).toFixed(1)];};
+function arcD(r,a0,a1){const [x0,y0]=pol(a0,r),[x1,y1]=pol(a1,r);return `M${x0} ${y0} A${r} ${r} 0 ${Math.abs(a1-a0)>180?1:0} ${a1>a0?1:0} ${x1} ${y1}`;}
+function buildRing(){
+  let h=`<circle cx="500" cy="500" r="497" fill="none" stroke="#1a2730" stroke-width="2"/><circle cx="500" cy="500" r="418" fill="none" stroke="rgba(9,14,19,.92)" stroke-width="74"/><circle cx="500" cy="500" r="381" fill="none" stroke="#23323d" stroke-width="1.5"/><circle cx="500" cy="500" r="455" fill="none" stroke="#23323d" stroke-width="1.5"/><circle cx="500" cy="500" r="373" fill="none" stroke="#2c3e4a" stroke-width="2"/>`;
+  for(let a=0;a<360;a+=2){const mj=a%10===0;const [x0,y0]=pol(a,459),[x1,y1]=pol(a,mj?470:464);h+=`<line x1="${x0}" y1="${y0}" x2="${x1}" y2="${y1}" stroke="${mj?'#3e5362':'#27363f'}" stroke-width="${mj?2:1.2}"/>`;}
+  [['hi',-126,-54,'#58c7e0','LAYERS'],['mid',-23,23,'#8aa0ae','CAMERA'],['low',60,140.5,'#f0b25a','MOVEMENTS'],['rig',156,204,'#8aa0ae','TOOLS']].forEach(([k,a0,a1,col,lab],i)=>{
+    h+=`<path d="${arcD(377,a0-6,a1+6)}" fill="none" stroke="${col}" stroke-opacity=".55" stroke-width="3"/>`;const mid=(a0+a1)/2,bottom=mid>20&&mid<160,span=lab.length*2.2;const d=bottom?arcD(488,mid+span,mid-span):arcD(476,mid-span,mid+span);
+    h+=`<path id="lp${i}" d="${d}" fill="none"/><text font-size="13" letter-spacing="3" fill="#6f828f" font-family="Barlow Semi Condensed,sans-serif" font-weight="600"><textPath href="#lp${i}" startOffset="50%" text-anchor="middle">${lab}</textPath></text>`;});
+  h+=`<path d="${arcD(479,28,52)}" fill="none" stroke="#141f27" stroke-width="9"/><path d="${arcD(492,28,52)}" fill="none" stroke="#141f27" stroke-width="9"/><path id="gA" d="${arcD(479,52,28)}" pathLength="100" fill="none" stroke="#58c7e0" stroke-width="9" stroke-dasharray="0 100"/><path id="gB" d="${arcD(492,52,28)}" pathLength="100" fill="none" stroke="#f0b25a" stroke-width="9" stroke-dasharray="0 100"/>`;
+  $('ringSvg').innerHTML=h;
+  $('slots').innerHTML=SLOTS.map((d,i)=>{const t=d.a*Math.PI/180;return `<button class="slot ${d.kind}" data-i="${i}" style="left:${(50+41.8*Math.cos(t)).toFixed(2)}%;top:${(50+41.8*Math.sin(t)).toFixed(2)}%" aria-label="${esc(d.t)}">${d.kind==='low'?`<span class="ab">${PRESETS[d.key].ab}</span>`:svgI(d.key)}</button>`;}).join('');
+}
+function updSlots(){document.querySelectorAll('.slot').forEach(b=>{const d=SLOTS[+b.dataset.i];const on=d.kind==='hi'?layer[d.key]:d.kind==='low'?ui.preset===d.key:d.kind==='rig'?!!ui[d.key]:false;b.classList.toggle('on',on);b.setAttribute('aria-pressed',on);});}
+function slotClick(d){
+  if(d.kind==='hi'){layer[d.key]=!layer[d.key];paint();toast(`${d.t} ${layer[d.key]?'shown':'hidden'}`);}
+  else if(d.kind==='mid')camTo(d.key);
+  else if(d.kind==='low'){ui.preset=ui.preset===d.key?null:d.key;presetT0=performance.now();if(!ui.preset)resetPose(false);
+    const p=ui.preset&&PRESETS[ui.preset];if(p&&p.chain)loadChain(p.chain,true);toast(ui.preset?`Playing: ${PRESETS[d.key].name}`:'Stopped');renderStats();}
+  else{ui[d.key]=!ui[d.key];if(d.key==='section'){setSection();renderStats();}paint();toast(`${d.t} ${ui[d.key]?'on':'off'}`);}
+  updSlots();renderBrowser();dirty=true;
+}
+
+/* ================= camera ================= */
+let camAnim=null;
+function tween(p1,t1){camAnim={s:performance.now(),p0:camera.position.clone(),t0:controls.target.clone(),p1,t1};}
+function camTo(k){const t=controls.target.clone();const D=k==='fit'?36:Math.max(8,camera.position.distanceTo(t));
+  const dir={ant:V3(0,0,1),post:V3(0,0,-1),rside:V3(-1,0,0),lside:V3(1,0,0),fit:V3(0,0,1)}[k];const tt=k==='fit'?V3(0,1.5,0):t;tween(tt.clone().addScaledVector(dir,D),tt);}
+function focusSel(){const it=items[ui.sel];if(!it)return;const p=selWorld(it);const d=camera.position.clone().sub(controls.target).normalize();const r=it.mesh.geometry.boundingSphere.radius*.01;tween(p.clone().addScaledVector(d,Math.max(2.2,r*6)),p);}
+function selWorld(it){return bonePt(it.dom,it.c);}
+
+/* ================= kinetic chains ================= */
+function loadChain(id,keep){
+  if(ui.chain===id&&!keep){ui.chain=null;chainSet=new Set();}
+  else{ui.chain=id;const ch=V1.chains.find(c=>c.id===id);chainSet=new Set();ch._links=ch.seq.map(([cid,side])=>{const its=items.filter(it=>it.cur&&it.cur.id===cid&&(side==='M'||it.side===side||it.side==='M'||ch.both));its.forEach(x=>chainSet.add(x.i));return its;});}
+  paint();renderStats();renderBrowser();
+}
+function updChainPins(){const box=$('cpins');if(!ui.chain||!ui.labels){box.innerHTML='';return;}const ch=V1.chains.find(c=>c.id===ui.chain);let h='';
+  ch._links.forEach((its,k)=>{if(!its.length)return;const p=V3(0,0,0);its.forEach(it=>p.add(selWorld(it)));p.divideScalar(its.length).project(camera);if(p.z>1)return;
+    h+=`<div class="cpin" style="transform:translate(${((p.x+1)/2*vp.clientWidth).toFixed(1)}px,${((1-p.y)/2*vp.clientHeight).toFixed(1)}px)">${k+1}</div>`;});box.innerHTML=h;}
+
+/* ================= panels ================= */
+let dirty=true;const closed={};
+function sec(id,title,val,body,cls=''){return `<section class="sec${closed[id]?' closed':''}"><button class="sec-h" data-tog="${id}"><span class="caret"></span>${title}<span class="v ${cls}">${val}</span></button><div class="sec-b">${body}</div></section>`;}
+const ul=a=>`<ul class="ls">${a.map(x=>`<li>${esc(x)}</li>`).join('')}</ul>`;
+function fmt(id,v){const d=DOFS[id];if(id.startsWith('fore'))return v<0?`${Math.round(-v)}° sup`:v>0?`${Math.round(v)}° pro`:'neutral';if(id.startsWith('wrist'))return v<0?`${Math.round(-v)}° ext`:v>0?`${Math.round(v)}° flex`:'0°';if(id.startsWith('ankle'))return v<0?`${Math.round(-v)}° plantar`:v>0?`${Math.round(v)}° dorsi`:'0°';return Math.round(v)+'°';}
+function dispName(it){return it.name+(it.side!=='M'?` (${SIDE[it.side]})`:'');}
+function renderStats(){
+  const mt=ui.mtab;const tabs=Object.entries(GROUPS_M).map(([k,n])=>`<button data-mtab="${k}" aria-pressed="${k===mt}">${n}</button>`).join('');
+  const sl=Object.entries(DOFS).filter(([id,d])=>d.g===mt).map(([id,d])=>`<label for="s-${id}">${esc(d.lab)}</label><input type="range" id="s-${id}" data-k="${id}" min="${d.min}" max="${d.max}" step="1" value="${pose[id]}"><output id="o-${id}"></output>`).join('');
+  let h=sec('mot','Motion',ui.preset?PRESETS[ui.preset].name:'Manual',`<div class="mtabs">${tabs}</div><div class="mot">${sl}</div>${mt.startsWith('arm')?'<div class="rhythm" id="rhythm"></div>':''}<div class="acts"><button class="btn" data-act="reset">Anatomical position</button>${ui.preset?'<button class="btn" data-act="stop">Stop movement</button>':''}</div>`,ui.preset?'amb':'acc');
+  h+=sec('act','Muscle activity','<span id="actN"></span>',`<div class="legend"><span class="a">Shortening</span><span class="b">Lengthening</span></div><div class="act" id="actList"></div><p class="sum" style="font-size:12.5px;color:var(--dim)">Change in origin-to-insertion distance from anatomical position. Shortening is not always active contraction: gravity-driven movements are often controlled by muscles lengthening.</p>`);
+  if(ui.chain){const ch=V1.chains.find(c=>c.id===ui.chain);
+    h+=sec('chain','Kinetic chain',esc(ch.type),`<div><div class="nm">${esc(ch.name)}</div><div class="lat">${esc(ch.src)}</div></div><p class="sum">${esc(ch.fn)}</p><div class="sub">Sequence</div><ol class="seq">${ch.seq.map(([cid,side,note],k)=>{const its=ch._links[k]||[];return `<li><button data-sel="${its[0]?its[0].i:''}"><span><span class="n">${esc(V1.byId[cid]?.name||cid)}</span><span class="x">${esc(note)}</span></span><span class="sd">${side==='M'?'Midline':side==='R'?'Right':'Left'}</span></button></li>`;}).join('')}</ol><div class="sub">When it fails</div>${ul(ch.dys)}<div class="sub">Assess with</div>${ul(ch.as)}<div class="acts"><button class="btn" data-act="unchain">Unload chain</button></div>`,'amb');}
+  if(ui.sel!=null){const it=items[ui.sel];const c=it.cur;const L=it.limb;
+    let body=`<div><div class="nm">${esc(dispName(it))}</div>${c&&c.lat?`<div class="lat">${esc(c.lat)}</div>`:''}</div><div class="chips"><span class="chip c">${KNAME[it.kind]}</span>${it.grp?`<span class="chip">${esc(it.grp)}</span>`:''}${it.grp2?`<span class="chip">${esc(it.grp2)}</span>`:''}</div>`;
+    if(it.A)body+=`<div class="live"><span>Length now</span><b id="liveLen">—</b></div>`;
+    if(L&&!(c&&c.a&&it.kind==='muscle'&&c.sys==='muscular'))body+=`<dl class="kv"><dt>Origin</dt><dd>${esc(L[0])}</dd><dt>Insertion</dt><dd>${esc(L[1])}</dd><dt>Action</dt><dd>${esc(L[2])}</dd><dt>Nerve</dt><dd>${esc(L[3])}</dd></dl>`;
+    if(c){body+=`<p class="sum">${esc(c.sum)}</p>`;if(c.a)body+=`<dl class="kv">${c.a.map(([k,v])=>`<dt>${esc(k)}</dt><dd>${esc(v)}</dd>`).join('')}</dl>`;if(c.act)body+=`<div class="sub">Actions</div>${ul(c.act)}`;}
+    if(!c&&!L)body+=`<p class="sum" style="color:var(--dim)">Part of ${esc(it.grp||KNAME[it.kind])}. Detailed notes for this structure are not written yet.</p>`;
+    body+=`<div class="acts"><button class="btn" data-act="focus">Focus</button><button class="btn" data-act="fade">${ui.fade?'Unfade':'Fade others'}</button><button class="btn" data-act="iso">${ui.iso?'Show all':'Isolate'}</button><button class="btn" data-act="hide">Hide</button><button class="btn" data-act="clear">Clear</button></div>`;
+    h+=sec('sel','Selection',KNAME[it.kind],body,'acc');
+    if(it.histo&&typeof HISTO!=='undefined'&&HISTO[it.histo]){const H=HISTO[it.histo];h+=sec('his','Histology',esc(H.t),`<canvas class="histo" data-h="${it.histo}" aria-label="Illustrated micrograph of ${esc(H.t)}"></canvas><div class="hcap"><span>${esc(H.stain)}</span><span>${esc(H.mag)} · illustrative</span></div><p class="sum">${esc(H.d)}</p><div class="sub">Look for</div>${ul(H.feat)}`);}
+    if(c&&c.t)h+=sec('dx','Diagnostics',`${c.t.length} tests`,`<div class="sub">Clinical tests</div><div class="tests">${c.t.map(([n,d])=>`<div class="test"><b>${esc(n)}</b><span>${esc(d)}</span></div>`).join('')}</div><div class="sub">Common conditions</div>${ul(c.p||[])}${c.rf?`<div class="flag"><b>Red flag</b>${esc(c.rf)}</div>`:''}`,'amb');
+    if(c&&c.chains&&c.chains.length)h+=sec('mem','Kinetic chains',`${c.chains.length}`,`<div class="chips">${c.chains.map(cid=>{const ch=V1.chains.find(x=>x.id===cid);return `<button class="chip" style="cursor:pointer;color:#ffd9a3;border-color:rgba(240,178,90,.55)" data-chain="${cid}">${ch.ab} · ${esc(ch.name)}</button>`;}).join('')}</div>`,'amb');
+  }
+  if(ui.section)h+=sec('cut','Cross-section',{y:'Transverse',z:'Coronal',x:'Sagittal'}[ui.sectionAxis],`<div class="acts">${['y','z','x'].map(a=>`<button class="btn" data-axis="${a}" ${a===ui.sectionAxis?'style="border-color:var(--acc);color:#fff"':''}>${{y:'Transverse',z:'Coronal',x:'Sagittal'}[a]}</button>`).join('')}</div><div class="cut"><input type="range" id="cutPos" min="0" max="100" value="${Math.round(ui.sectionPos*100)}" aria-label="Cut position"><output id="cutO">${Math.round(ui.sectionPos*100)}%</output></div>`);
+  h+=sec('about','About this model','',`<p class="sum" style="font-size:13px">${items.length.toLocaleString()} structures from the Z-Anatomy atlas, simplified for real-time use. The skeleton is rigged at 22 segments with joint axes set from bony landmarks; soft tissues follow the bones nearest to them, and muscles bulge as they shorten. Nerves and vessels are drawn as tubes along their atlas paths.</p>`);
+  h+=`<p class="foot">3D models: Z-Anatomy by Gauthier Kervyn (CC BY-SA 4.0), derived from BodyParts3D © The Database Center for Life Science (CC BY-SA 2.1 Japan); skin surface from BodyParts3D. Educational reference; not a diagnostic device. ${esc(VERSION)}</p>`;
+  $('stats').innerHTML=h;$('stats').querySelectorAll('canvas.histo').forEach(cv=>window.drawHisto&&drawHisto(cv,cv.dataset.h));dirty=true;
+}
+function updOutputs(){
+  for(const id of Object.keys(DOFS)){const o=$('o-'+id);if(!o)continue;o.textContent=fmt(id,pose[id]);const s=$('s-'+id);if(s&&document.activeElement!==s)s.value=pose[id];}
+  const r=$('rhythm');if(r){const s=ui.mtab.slice(-1);const R=rhythm[s];r.innerHTML=R&&R.g>0?`Scapulohumeral rhythm: <b>${Math.round(R.gh)}°</b> glenohumeral + <b>${Math.round(R.g)}°</b> scapulothoracic`:'Scapulohumeral rhythm: arm at rest';}
+  const ms=items.filter(i=>i.A&&i.mesh.visible).map(i=>({i,d:i.ratio-1})).filter(m=>Math.abs(m.d)>.02).sort((a,b)=>Math.abs(b.d)-Math.abs(a.d));
+  const L=$('actList');if(L)L.innerHTML=ms.slice(0,10).map(({i,d})=>{const w=Math.min(50,Math.abs(d)/.4*50);return `<button data-sel="${i.i}" title="${esc(dispName(i))}">${esc(dispName(i))}</button><div class="dbar"><i style="${d<0?`right:50%;width:${w}%;background:var(--hot)`:`left:50%;width:${w}%;background:var(--cool)`}"></i></div><em class="${d<0?'sh':'ln'}">${d>0?'+':''}${Math.round(d*100)}%</em>`;}).join('')||'<span style="grid-column:1/-1;color:var(--dim)">Move a joint or play a movement to see muscles change length.</span>';
+  const n=$('actN');if(n)n.textContent=`${ms.filter(m=>m.d<0).length} shortening · ${ms.filter(m=>m.d>0).length} lengthening`;
+  const ll=$('liveLen');if(ll&&ui.sel!=null){const d=items[ui.sel].ratio-1;ll.textContent=Math.abs(d)<.01?'Resting length':`${d>0?'+':''}${Math.round(d*100)}% ${d<0?'shorter':'longer'}`;ll.className=Math.abs(d)<.01?'':d<0?'sh':'ln';}
+  const vis=items.filter(i=>i.mesh.visible).length;$('gE').textContent=vis.toLocaleString();$('gS').textContent=ms.length;
+  $('gA').setAttribute('stroke-dasharray',`${(vis/items.length*100).toFixed(1)} 100`);$('gB').setAttribute('stroke-dasharray',`${Math.min(100,ms.length/60*100).toFixed(1)} 100`);
+  const any=Object.entries(pose).some(([k,v])=>Math.abs(v-(DOFS[k].rest??0))>.5);$('poseLabel').textContent=ui.preset?PRESETS[ui.preset].name:any?'Custom pose':'Anatomical position';
+}
+
+/* ================= browser ================= */
+const gOpen={};
+function renderBrowser(){
+  const q=($('q').value||'').trim().toLowerCase();let h='';
+  if(ui.tab==='ch'){$('bTitle').textContent='Kinetic chains';h=V1.chains.map(c=>`<div class="roww"><button class="row${ui.chain===c.id?' on':''}" data-chain="${c.id}" style="padding-left:10px"><span class="ab">${c.ab}</span>${esc(c.name)}</button></div>`).join('')+'<p style="padding:10px;color:var(--dim);font-size:12.5px">Loading a chain lights its links in amber and numbers them in order.</p>';$('blist').innerHTML=h;return;}
+  $('bTitle').textContent='Structure browser';
+  for(const [lk,ln] of LAYERS){
+    const list=items.filter(i=>i.layer===lk&&(!q||(i.name+' '+i.grp+' '+(i.cur?.lat||'')).toLowerCase().includes(q)));if(!list.length)continue;
+    const open=q?true:gOpen[lk];h+=`<div class="grp${open?'':' closed'}"><button data-grp="${lk}"><span class="caret"></span>${esc(ln)}<span class="cnt">${list.length}</span></button><div class="rows">`;
+    if(open){const byG={};list.forEach(i=>{(byG[i.grp||'Other']=byG[i.grp||'Other']||[]).push(i);});
+      for(const [g,arr] of Object.entries(byG).sort((a,b)=>a[0].localeCompare(b[0]))){const gk=lk+'/'+g;const o2=q?true:gOpen[gk];
+        h+=`<div class="grp l2${o2?'':' closed'}"><button data-grp="${esc(gk)}"><span class="caret"></span>${esc(g)}<span class="cnt">${arr.length}</span></button><div class="rows">`;
+        if(o2)h+=arr.sort((a,b)=>a.name.localeCompare(b.name)||a.side.localeCompare(b.side)).slice(0,400).map(i=>`<div class="roww"><button class="row${ui.sel===i.i?' on':''}${i.visible?'':' hidden'}" data-sel="${i.i}"><span class="dot" style="background:${DOT[i.kind]}"></span>${esc(i.name)}<span class="sd">${i.side!=='M'?i.side:''}</span></button><button class="eye" data-eye="${i.i}" aria-label="${i.visible?'Hide':'Show'} ${esc(i.name)}">${i.visible?EYE:EYEX}</button></div>`).join('');
+        h+='</div></div>';}}
+    h+='</div></div>';
+  }
+  $('blist').innerHTML=h||'<p style="padding:10px;color:var(--dim)">No matches.</p>';
+}
+const EYE='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><path d="M2 12s3.5-6 10-6 10 6 10 6-3.5 6-10 6S2 12 2 12z"/><circle cx="12" cy="12" r="2.6"/></svg>';
+const EYEX='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><path d="M2 12s3.5-6 10-6 10 6 10 6-3.5 6-10 6S2 12 2 12z"/><path d="M4 20L20 4"/></svg>';
+function select(i){ui.sel=i;if(i==null){ui.fade=false;ui.iso=false;}paint();renderStats();renderBrowser();updSlots();}
+let toastT=0;function toast(m){const t=$('toast');t.textContent=m;t.classList.add('show');clearTimeout(toastT);toastT=setTimeout(()=>t.classList.remove('show'),1600);}
+function resetPose(render=true){for(const id of Object.keys(pose))pose[id]=DOFS[id].rest??0;applyPose();if(render)renderStats();}
+
+/* ================= events ================= */
+function wire(){
+  const cv=renderer.domElement;let down=null;const tip=$('tip');
+  cv.addEventListener('pointerdown',e=>{down={x:e.clientX,y:e.clientY};});
+  cv.addEventListener('pointerup',e=>{if(!down)return;const m=Math.hypot(e.clientX-down.x,e.clientY-down.y);down=null;if(m>5)return;select(pick(e));});
+  let hovT=0,hovTimer=0;cv.addEventListener('pointermove',e=>{if(e.buttons){tip.hidden=true;return;}clearTimeout(hovTimer);hovTimer=setTimeout(()=>{const id=pick(e);
+    if(id!==ui.hover){ui.hover=id;paint();}if(id!=null){const it=items[id];tip.innerHTML=`<b>${esc(dispName(it))}</b><span>${esc(KNAME[it.kind])}${it.grp?' · '+esc(it.grp):''}${it.A&&Math.abs(it.ratio-1)>.01?` · ${it.ratio<1?'shortening':'lengthening'} ${Math.abs(Math.round((it.ratio-1)*100))}%`:''}</span>`;tip.hidden=false;tip.style.left=Math.min(innerWidth-270,e.clientX+14)+'px';tip.style.top=(e.clientY+14)+'px';}else tip.hidden=true;},90);});
+  cv.addEventListener('pointerleave',()=>{clearTimeout(hovTimer);tip.hidden=true;if(ui.hover!=null){ui.hover=null;paint();}});
+  $('slots').addEventListener('click',e=>{const b=e.target.closest('.slot');if(b)slotClick(SLOTS[+b.dataset.i]);});
+  $('slots').addEventListener('pointerover',e=>{const b=e.target.closest('.slot');if(!b)return;const d=SLOTS[+b.dataset.i];tip.innerHTML=`<b>${esc(d.t)}</b><span>${esc(d.d)}</span>`;tip.hidden=false;tip.style.left=Math.min(innerWidth-270,e.clientX+14)+'px';tip.style.top=(e.clientY+14)+'px';});
+  $('slots').addEventListener('pointerout',()=>{tip.hidden=true;});
+  $('stats').addEventListener('input',e=>{const k=e.target.dataset.k;if(k){ui.preset=null;pose[k]=+e.target.value;applyPose();updSlots();}
+    if(e.target.id==='cutPos'){ui.sectionPos=e.target.value/100;$('cutO').textContent=e.target.value+'%';setSection();}});
+  $('stats').addEventListener('change',e=>{if(e.target.dataset.k)renderStats();});
+  $('stats').addEventListener('click',e=>{
+    const t=e.target.closest('[data-tog]');if(t){closed[t.dataset.tog]=!closed[t.dataset.tog];t.parentElement.classList.toggle('closed');return;}
+    const mt=e.target.closest('[data-mtab]');if(mt){ui.mtab=mt.dataset.mtab;renderStats();return;}
+    const s=e.target.closest('[data-sel]');if(s){if(s.dataset.sel!=='')select(+s.dataset.sel);return;}
+    const ch=e.target.closest('[data-chain]');if(ch){loadChain(ch.dataset.chain);return;}
+    const ax=e.target.closest('[data-axis]');if(ax){ui.sectionAxis=ax.dataset.axis;setSection();renderStats();return;}
+    const a=e.target.closest('[data-act]');if(!a)return;const act=a.dataset.act;
+    if(act==='reset'){ui.preset=null;resetPose();updSlots();}else if(act==='stop'){ui.preset=null;resetPose();updSlots();}
+    else if(act==='focus')focusSel();else if(act==='fade'){ui.fade=!ui.fade;ui.iso=false;paint();renderStats();updSlots();}
+    else if(act==='iso'){ui.iso=!ui.iso;ui.fade=false;paint();renderStats();updSlots();}
+    else if(act==='hide'){items[ui.sel].visible=false;select(null);}else if(act==='clear')select(null);
+    else if(act==='unchain'){ui.chain=null;chainSet=new Set();paint();renderStats();renderBrowser();}
+  });
+  $('blist').addEventListener('click',e=>{const g=e.target.closest('[data-grp]');if(g){gOpen[g.dataset.grp]=!gOpen[g.dataset.grp];renderBrowser();return;}
+    const ey=e.target.closest('[data-eye]');if(ey){const it=items[+ey.dataset.eye];it.visible=!it.visible;paint();renderBrowser();return;}
+    const ch=e.target.closest('[data-chain]');if(ch){loadChain(ch.dataset.chain);return;}
+    const r=e.target.closest('[data-sel]');if(r)select(+r.dataset.sel);});
+  let qt=0;$('q').addEventListener('input',()=>{clearTimeout(qt);qt=setTimeout(renderBrowser,150);});
+  $('t-st').onclick=()=>{ui.tab='st';$('t-st').setAttribute('aria-selected',true);$('t-ch').setAttribute('aria-selected',false);renderBrowser();};
+  $('t-ch').onclick=()=>{ui.tab='ch';$('t-ch').setAttribute('aria-selected',true);$('t-st').setAttribute('aria-selected',false);renderBrowser();};
+  $('rT').onclick=()=>{ui.mode='tissue';$('rT').setAttribute('aria-pressed',true);$('rS').setAttribute('aria-pressed',false);paint();};
+  $('rS').onclick=()=>{ui.mode='scan';$('rS').setAttribute('aria-pressed',true);$('rT').setAttribute('aria-pressed',false);paint();};
+  $('resetBtn').onclick=()=>{ui.preset=null;ui.chain=null;chainSet=new Set();items.forEach(i=>i.visible=true);select(null);resetPose();camTo('fit');updSlots();};
+  addEventListener('keydown',e=>{if(e.key==='Escape'&&!e.target.matches('input'))select(null);});
+  new ResizeObserver(resize).observe(vp);
+}
+function resize(){const w=vp.clientWidth,h=vp.clientHeight;if(!w||!h)return;renderer.setSize(w,h,false);camera.aspect=w/h;camera.updateProjectionMatrix();}
+function updPin(){const pin=$('pin');if(ui.sel==null||!ui.labels){pin.hidden=true;return;}const it=items[ui.sel];if(!it.mesh.visible){pin.hidden=true;return;}
+  const c=selWorld(it).project(camera);if(c.z>1){pin.hidden=true;return;}pin.hidden=false;pin.style.transform=`translate(${((c.x+1)/2*vp.clientWidth).toFixed(1)}px,${((1-c.y)/2*vp.clientHeight).toFixed(1)}px)`;
+  const d=it.A?it.ratio-1:0;pin.querySelector('b').innerHTML=`${esc(dispName(it))}<small>${esc(it.grp||KNAME[it.kind])}${it.A&&Math.abs(d)>.01?` · ${d>0?'+':''}${Math.round(d*100)}%`:''}</small>`;}
+function loop(now){
+  if(ui.preset)runPreset(now);
+  if(camAnim){const q=Math.min(1,(now-camAnim.s)/650),e=1-Math.pow(1-q,3);camera.position.lerpVectors(camAnim.p0,camAnim.p1,e);controls.target.lerpVectors(camAnim.t0,camAnim.t1,e);if(q>=1)camAnim=null;}
+  controls.update();renderer.render(scene,camera);updPin();updChainPins();
+  if(dirty){dirty=false;updOutputs();}
+  requestAnimationFrame(loop);
+}
+
+/* ================= boot ================= */
+let BINS;
+(async()=>{
+  try{
+    const d=await load();MAN=d.man;BINS=d.bins;V1=d.v1;V1.byId=Object.fromEntries(V1.S.map(s=>[s.id,s]));V1.chains=V1.CHAINS;
+    V1.S.forEach(s=>{s.chains=V1.CHAINS.filter(c=>c.seq.some(q=>q[0]===s.id)).map(c=>c.id);});
+    $('loadTxt').textContent='Rigging skeleton…';await new Promise(r=>setTimeout(r,30));
+    build();defDofs();setupLM();buildRing();wire();resize();applyPose();renderStats();renderBrowser();updSlots();$('loading').remove();$('verLbl').textContent=VERSION;
+    requestAnimationFrame(loop);window.__corpus={pose,applyPose,select,ui,items,slotClick,SLOTS,renderStats,loadChain,camTo,DOFS};
+  }catch(e){console.error(e);$('loadTxt').textContent='Could not load the specimen: '+e.message;}
+})();
+
+</script>
+</body></html>
