@@ -2,7 +2,7 @@ import * as THREE from 'three';
 import {OrbitControls} from 'three/addons/controls/OrbitControls.js';
 import {RoomEnvironment} from 'three/addons/environments/RoomEnvironment.js';
 
-const CFG=window.CORPUS||{};const DATA=CFG.data||'data/';const VERSION=CFG.version||'web';
+const CFG=window.CORPUS||{};const DATA=CFG.data||'data/';let VERSION=CFG.version||'web';
 const $=id=>document.getElementById(id);
 const esc=s=>String(s??'').replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
 const cap=s=>s?s.charAt(0).toUpperCase()+s.slice(1):s;
@@ -450,7 +450,7 @@ let BINS;
     const d=await load();MAN=d.man;BINS=d.bins;V1=d.v1;V1.byId=Object.fromEntries(V1.S.map(s=>[s.id,s]));V1.chains=V1.CHAINS;
     V1.S.forEach(s=>{s.chains=V1.CHAINS.filter(c=>c.seq.some(q=>q[0]===s.id)).map(c=>c.id);});
     $('loadTxt').textContent='Rigging skeleton…';await new Promise(r=>setTimeout(r,30));
-    build();defDofs();setupLM();buildRing();wire();resize();applyPose();renderStats();renderBrowser();updSlots();$('loading').remove();$('verLbl').textContent=VERSION;
+    build();defDofs();setupLM();buildRing();wire();resize();applyPose();renderStats();renderBrowser();updSlots();$('loading').remove();$('verLbl').textContent=VERSION;if(window.corpusDesktop)window.corpusDesktop.version().then(v=>{VERSION='v'+v;$('verLbl').textContent=VERSION;renderStats();});
     requestAnimationFrame(loop);window.__corpus={pose,applyPose,select,ui,items,slotClick,SLOTS,renderStats,loadChain,camTo,DOFS};
   }catch(e){console.error(e);$('loadTxt').textContent='Could not load the specimen: '+e.message;}
 })();
