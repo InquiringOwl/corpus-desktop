@@ -6,7 +6,7 @@ frag=frag.replace('<link rel="preconnect" href="https://fonts.googleapis.com">\n
 import re
 frag=re.sub(r'<link rel="stylesheet" href="https://fonts.googleapis.com[^>]*>','<link rel="stylesheet" href="fonts.css">',frag)
 upd='''<script>
-if(window.corpusDesktop){(function(){const D=window.corpusDesktop;const box=document.createElement('div');box.className='upd';box.hidden=true;document.body.appendChild(box);
+if(window.corpusDesktop){(function(){const D=window.corpusDesktop;if(D.platform)document.documentElement.classList.add(D.platform);const box=document.createElement('div');box.className='upd';box.hidden=true;document.body.appendChild(box);
  D.version().then(v=>{const l=document.getElementById('verLbl');if(l)l.textContent='v'+v;});
  D.onUpdate(s=>{let h='';
   if(s.status==='downloading')h=`<b>Downloading update${s.version?' '+s.version:''}…</b><span>${s.percent||0}% · you can keep working</span>`;

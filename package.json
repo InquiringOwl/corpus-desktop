@@ -1,7 +1,7 @@
 {
   "name": "corpus-body-lab",
   "productName": "Corpus",
-  "version": "1.0.2",
+  "version": "1.0.3",
   "description": "Corpus Body Lab: 3D anatomy, histology and kinetic-chain atlas with an EVE-style fitting interface.",
   "author": "Wolfie's Coven <devon@ashleyhoffmann.com>",
   "license": "CC-BY-SA-4.0",

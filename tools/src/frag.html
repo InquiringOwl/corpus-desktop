@@ -152,6 +152,11 @@ ol.seq .n{color:#eef3f6}ol.seq .x{display:block;color:var(--dim);font-size:12.5p
 .upd{position:fixed;right:16px;bottom:16px;z-index:60;background:rgba(8,14,18,.96);border:1px solid var(--acc);padding:10px 12px;max-width:320px;font-size:13px;display:flex;flex-direction:column;gap:8px;box-shadow:0 10px 40px rgba(0,0,0,.5)}
 .upd b{color:#fff}
 .upd .acts{justify-content:flex-end}
+
+/* desktop window: drag by the top bar */
+.topbar{-webkit-app-region:drag;user-select:none}
+.topbar button,.topbar input,.topbar .seg,.topbar a{-webkit-app-region:no-drag}
+html.darwin .topbar{padding-left:76px}
 </style>
 
 <div id="app">

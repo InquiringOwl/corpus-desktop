@@ -150,6 +150,11 @@ ol.seq .n{color:#eef3f6}ol.seq .x{display:block;color:var(--dim);font-size:12.5p
 .upd{position:fixed;right:16px;bottom:16px;z-index:60;background:rgba(8,14,18,.96);border:1px solid var(--acc);padding:10px 12px;max-width:320px;font-size:13px;display:flex;flex-direction:column;gap:8px;box-shadow:0 10px 40px rgba(0,0,0,.5)}
 .upd b{color:#fff}
 .upd .acts{justify-content:flex-end}
+
+/* desktop window: drag by the top bar */
+.topbar{-webkit-app-region:drag;user-select:none}
+.topbar button,.topbar input,.topbar .seg,.topbar a{-webkit-app-region:no-drag}
+html.darwin .topbar{padding-left:76px}
 </style>
 
 <div id="app">
@@ -330,9 +335,9 @@ function drawHisto(cv,key,seed){
   const bl=40*u;g.fillStyle='rgba(0,0,0,.55)';g.fillRect(8,h-24,bl+56,18);g.fillStyle='#fff';g.fillRect(14,h-16,bl,3);g.font=`500 11px "Barlow Semi Condensed",sans-serif`;g.fillText(H.scale,20+bl,h-11);
 }
 </script>
-<script>window.CORPUS={data:"data/",version:"v1.0.0"};</script>
+<script>window.CORPUS={data:"data/",version:"v1.0.3"};</script>
 <script>
-if(window.corpusDesktop){(function(){const D=window.corpusDesktop;const box=document.createElement('div');box.className='upd';box.hidden=true;document.body.appendChild(box);
+if(window.corpusDesktop){(function(){const D=window.corpusDesktop;if(D.platform)document.documentElement.classList.add(D.platform);const box=document.createElement('div');box.className='upd';box.hidden=true;document.body.appendChild(box);
  D.version().then(v=>{const l=document.getElementById('verLbl');if(l)l.textContent='v'+v;});
  D.onUpdate(s=>{let h='';
   if(s.status==='downloading')h=`<b>Downloading update${s.version?' '+s.version:''}…</b><span>${s.percent||0}% · you can keep working</span>`;
